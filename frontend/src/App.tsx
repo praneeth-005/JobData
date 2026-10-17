@@ -9,6 +9,7 @@ export type Screen = 'OVERVIEW' | 'FIND_JOBS' | 'JOB_DETAILS' | 'SIGN_IN' | 'SIG
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('OVERVIEW');
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string }>({ name: 'Arjun Rao', email: 'arjun.rao@college.edu' });
   const [selectedJobId, setSelectedJobId] = useState<string>('job-rzp');
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -37,7 +38,10 @@ export default function App() {
   if (activeScreen === 'SIGN_IN') {
     return (
       <SignInPage 
-        onSignInSuccess={() => setActiveScreen('OVERVIEW')}
+        onSignInSuccess={(user) => {
+          setCurrentUser(user);
+          setActiveScreen('OVERVIEW');
+        }}
         onNavigateToSignUp={() => setActiveScreen('SIGN_UP')}
       />
     );
@@ -46,7 +50,10 @@ export default function App() {
   if (activeScreen === 'SIGN_UP') {
     return (
       <SignUpPage 
-        onSignUpSuccess={() => setActiveScreen('OVERVIEW')}
+        onSignUpSuccess={(user) => {
+          setCurrentUser(user);
+          setActiveScreen('OVERVIEW');
+        }}
         onNavigateToSignIn={() => setActiveScreen('SIGN_IN')}
       />
     );
@@ -242,7 +249,7 @@ export default function App() {
                 AR
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-bold text-[#0f172a] truncate">Arjun Rao</div>
+                <div className="text-xs font-bold text-[#0f172a] truncate">{currentUser.name}</div>
                 <div className="text-[10px] text-[#64748b] font-mono">2024 Grad</div>
               </div>
             </div>
