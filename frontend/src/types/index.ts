@@ -1,34 +1,82 @@
 export type WorkMode = 'REMOTE' | 'HYBRID' | 'ONSITE';
-export type InterviewMode = 'VIRTUAL' | 'IN_PERSON' | 'MIXED';
+export type InterviewMode = 'VIRTUAL' | 'DIRECT_WALKIN' | 'CAMPUS_POOL';
+
+export interface EpistemicData {
+  field: string;
+  value: string;
+  reliability: 'KNOWN' | 'ESTIMATED' | 'UNKNOWN';
+  sourceNote: string;
+}
+
+export interface MatchFactor {
+  title: string;
+  description: string;
+  type: 'POSITIVE' | 'GAP' | 'RISK_FREE';
+  scoreImpact?: string;
+  recommendation?: string;
+}
 
 export interface Job {
   id: string;
+  jobCode: string;
   title: string;
   companyName: string;
-  companyId: string;
+  companyLogoUrl?: string;
   location: string;
   workMode: WorkMode;
   workingDays: string;
+  shiftTiming: string;
   salaryText: string;
   salaryMinLpa: number;
+  salaryBreakdown?: string;
+  batchAllowed: string;
   roleCategory: string;
   experienceRequired: string;
+  jobType: 'FULL_TIME' | 'INTERNSHIP' | 'CONTRACT';
+  interviewMode: InterviewMode;
   tags: string[];
   isWalkin: boolean;
   walkinDetails?: {
     venue: string;
     date: string;
     time: string;
+    reportingWindow: string;
   };
   jobMatchScore: number;
   resumeMatchScore: number;
   verificationBadge: string;
+  sourcePortal: string;
   sourceUrl: string;
+  lastIngestedAgo: string;
+  bondStatus: string;
+  aboutRole: string;
+  responsibilities: string[];
+  requirements: string[];
+  preferredQualifications: string[];
+  strengths: MatchFactor[];
+  gaps: MatchFactor[];
+  riskChecks: MatchFactor[];
+  epistemicMatrix: EpistemicData[];
 }
 
-export interface MetricSummary {
-  qualifiedRoles: number;
-  highMatchCount: number;
-  walkinDrivesCount: number;
-  pipelineCount: number;
+export interface RadarCompany {
+  id: string;
+  name: string;
+  logo: string;
+  status: 'HIRING_ACTIVE' | 'HIGH_VOLUME' | 'POOL_EXPECTED';
+  badgeText: string;
+  fresherRolesCount: number;
+  lastDriveDate: string;
+  portalUrl: string;
+}
+
+export interface PipelineItem {
+  id: string;
+  company: string;
+  role: string;
+  salary: string;
+  stage: string;
+  stageDate: string;
+  roundDetails: string;
+  statusType: 'INTERVIEW' | 'ASSESSMENT' | 'UNDER_REVIEW';
 }

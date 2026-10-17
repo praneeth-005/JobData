@@ -1,140 +1,457 @@
 import React, { useState } from 'react';
-import { 
-  Compass, 
-  Briefcase, 
-  FileText, 
-  Building2, 
-  Bell, 
-  Sliders, 
-  CheckCircle2, 
-  MapPin, 
-  Clock, 
-  Search, 
-  ExternalLink, 
-  Bookmark, 
-  ArrowRight,
-  ShieldCheck,
-  AlertTriangle
-} from 'lucide-react';
 import DashboardPage from './pages/DashboardPage';
 import FindJobsPage from './pages/FindJobsPage';
 import JobDetailsPage from './pages/JobDetailsPage';
 
-export type ActiveScreen = 'DASHBOARD' | 'FIND_JOBS' | 'JOB_DETAILS';
+export type Screen = 'OVERVIEW' | 'FIND_JOBS' | 'JOB_DETAILS';
 
 export default function App() {
-  const [activeScreen, setActiveScreen] = useState<ActiveScreen>('DASHBOARD');
-  const [selectedJobId, setSelectedJobId] = useState<string>('job-1');
+  const [activeScreen, setActiveScreen] = useState<Screen>('OVERVIEW');
+  const [selectedJobId, setSelectedJobId] = useState<string>('job-rzp');
+  const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
 
   const navigateToJob = (jobId: string) => {
     setSelectedJobId(jobId);
     setActiveScreen('JOB_DETAILS');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setUploadMessage('Parsing master resume against 18 fresher specifications...');
+      setTimeout(() => {
+        setUploadMessage('✓ Master Resume (Arjun_Rao_2024.pdf) analyzed! 14 verified skills synced.');
+        setTimeout(() => {
+          setUploadMessage(null);
+          setIsResumeModalOpen(false);
+        }, 1800);
+      }, 1000);
+    }
   };
 
   return (
-    <div className="min-h-screen flex bg-canvas text-slate-ink font-sans">
-      {/* Left Sidebar */}
-      <aside className="w-64 border-r border-slate-border bg-white flex flex-col justify-between shrink-0">
-        <div>
-          {/* Brand */}
-          <div className="p-5 border-b border-slate-border flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-lg">
+    <div className="min-h-screen bg-[#faf8ff] text-[#0f172a] font-sans flex flex-col">
+      
+      {/* Sidebar (Fixed on Left, 240px wide) */}
+      <aside className="fixed left-0 top-0 h-screen w-60 bg-white border-r border-[#e8eaf6] z-50 flex flex-col justify-between shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+        
+        <div className="flex flex-col flex-1 min-h-0">
+          
+          {/* Logo Brand Header */}
+          <div className="h-14 px-4 flex items-center gap-2.5 border-b border-[#f1f5f9]">
+            <div className="w-8 h-8 rounded-lg bg-[#4338ca] text-white flex items-center justify-center font-bold text-sm shadow-xs">
               IT
             </div>
             <div>
-              <div className="font-semibold text-sm tracking-tight text-slate-ink">IT Career Partner</div>
-              <div className="text-[11px] font-mono text-slate-muted">ENG | IND v1.0</div>
+              <div className="text-[13px] font-bold text-[#0f172a] tracking-tight leading-tight">
+                IT Career Partner
+              </div>
+              <div className="text-[10px] font-mono text-[#94a3b8] uppercase">
+                ENG | IND v1.0
+              </div>
             </div>
           </div>
 
-          {/* Navigation Items */}
-          <div className="p-3 space-y-1">
-            <div className="px-3 py-2 text-[11px] font-bold tracking-wider text-slate-muted uppercase font-mono">
-              Discovery
-            </div>
-            <button 
-              onClick={() => setActiveScreen('DASHBOARD')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition ${
-                activeScreen === 'DASHBOARD' ? 'bg-primary text-white' : 'text-slate-secondary hover:bg-slate-100'
-              }`}
-            >
-              <Compass className="w-4 h-4" />
-              <span>Dashboard</span>
-              <span className="ml-auto text-[10px] font-mono bg-white/20 px-1.5 py-0.5 rounded">LIVE</span>
-            </button>
+          {/* Nav items list */}
+          <div className="p-3 flex flex-col gap-4 overflow-y-auto flex-1 text-xs font-medium text-[#64748b]">
+            
+            {/* Group: DISCOVERY */}
+            <div className="flex flex-col gap-1">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
+                DISCOVERY
+              </span>
 
-            <button 
-              onClick={() => setActiveScreen('FIND_JOBS')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition ${
-                activeScreen === 'FIND_JOBS' ? 'bg-primary text-white' : 'text-slate-secondary hover:bg-slate-100'
-              }`}
-            >
-              <Briefcase className="w-4 h-4" />
-              <span>Find Verified Jobs</span>
-              <span className="ml-auto text-[10px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">18</span>
-            </button>
+              {/* Overview / Dashboard */}
+              <button 
+                onClick={() => setActiveScreen('OVERVIEW')}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'OVERVIEW'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">grid_view</span>
+                  <span>Overview</span>
+                </div>
+                {activeScreen === 'OVERVIEW' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4338ca]"></span>
+                )}
+              </button>
 
-            <div className="pt-4 px-3 py-2 text-[11px] font-bold tracking-wider text-slate-muted uppercase font-mono">
-              Intelligence
+              {/* Find Jobs */}
+              <button 
+                onClick={() => setActiveScreen('FIND_JOBS')}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'FIND_JOBS'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">search</span>
+                  <span>Find Jobs</span>
+                </div>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                  activeScreen === 'FIND_JOBS' ? 'bg-white/20 text-white' : 'bg-[#eef2ff] text-[#4338ca]'
+                }`}>
+                  34
+                </span>
+              </button>
+
+              {/* Walk-in Radar */}
+              <button 
+                onClick={() => setActiveScreen('FIND_JOBS')}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px] text-[#dc2626]">radar</span>
+                  <span>Walk-in Radar</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#fef2f2] text-[#dc2626] font-bold px-1.5 py-0.2 rounded">
+                  LIVE
+                </span>
+              </button>
+
+              {/* Top Matches */}
+              <button 
+                onClick={() => setActiveScreen('OVERVIEW')}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px] text-[#059669]">auto_awesome</span>
+                  <span>Top Matches</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.2 rounded">
+                  85%+
+                </span>
+              </button>
             </div>
-            <button 
-              onClick={() => setActiveScreen('JOB_DETAILS')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition ${
-                activeScreen === 'JOB_DETAILS' ? 'bg-primary text-white' : 'text-slate-secondary hover:bg-slate-100'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              <span>Job Details & AI Match</span>
-              <span className="ml-auto text-[10px] font-mono bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold">Preview</span>
-            </button>
+
+            {/* Group: INTELLIGENCE */}
+            <div className="flex flex-col gap-1">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
+                INTELLIGENCE
+              </span>
+
+              {/* Master Resume */}
+              <button 
+                onClick={() => setIsResumeModalOpen(true)}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">description</span>
+                  <span>Master Resume</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.2 rounded">
+                  88%
+                </span>
+              </button>
+
+              {/* Job Details & AI Match Breakdown (Screen 3) */}
+              <button 
+                onClick={() => setActiveScreen('JOB_DETAILS')}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'JOB_DETAILS'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">psychology</span>
+                  <span>AI Match Breakdown</span>
+                </div>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
+              </button>
+
+              {/* Monitored Portals */}
+              <button 
+                onClick={() => setActiveScreen('OVERVIEW')}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">domain</span>
+                  <span>Monitored Portals</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#f1f5f9] px-1.5 py-0.2 rounded">
+                  4
+                </span>
+              </button>
+            </div>
+
+            {/* Group: TRACKING */}
+            <div className="flex flex-col gap-1">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
+                TRACKING
+              </span>
+
+              <button 
+                onClick={() => setActiveScreen('OVERVIEW')}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">assignment_turned_in</span>
+                  <span>My Applications</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#f1f5f9] px-1.5 py-0.2 rounded font-bold">
+                  12
+                </span>
+              </button>
+
+              <button 
+                onClick={() => setIsNotificationOpen(true)}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">notifications</span>
+                  <span>Notifications</span>
+                </div>
+                <span className="w-2 h-2 rounded-full bg-[#dc2626]"></span>
+              </button>
+            </div>
+
+            {/* Group: CONFIGURATION */}
+            <div className="flex flex-col gap-1">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
+                CONFIGURATION
+              </span>
+
+              <button 
+                onClick={() => alert("Preferences:\n- Floor CTC: ≥ ₹2.4 LPA (Enforced)\n- Freshers Only: 0 YOE (Enforced)\n- Cities: Hyderabad, Bengaluru, Pune, Remote")}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
+              >
+                <span className="material-symbols-outlined text-[17px]">tune</span>
+                <span>Preferences</span>
+              </button>
+
+              <button 
+                onClick={() => alert("Account Settings:\n- Arjun Rao (2024 Grad, CS Engineering)\n- Master Resume: Arjun_Rao_2024.pdf\n- Email: arjun.rao@example.com")}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
+              >
+                <span className="material-symbols-outlined text-[17px]">settings</span>
+                <span>Account Settings</span>
+              </button>
+            </div>
+
           </div>
         </div>
 
-        {/* User Badge */}
-        <div className="p-4 border-t border-slate-border bg-slate-50 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
-            AR
+        {/* Profile Card at bottom of sidebar */}
+        <div className="p-3 border-t border-[#f1f5f9] bg-[#f8fafc]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-[#4338ca] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                AR
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-[#0f172a] truncate">Arjun Rao</div>
+                <div className="text-[10px] text-[#64748b] font-mono">2024 Grad</div>
+              </div>
+            </div>
+            <button 
+              onClick={() => alert("Profile Settings: Arjun Rao")}
+              className="text-[#94a3b8] hover:text-[#0f172a]"
+            >
+              <span className="material-symbols-outlined text-[17px]">settings</span>
+            </button>
           </div>
-          <div className="overflow-hidden">
-            <div className="text-xs font-semibold text-slate-ink truncate">Arjun Rao</div>
-            <div className="text-[11px] font-mono text-slate-muted">2024 Grad • Floor: ≥2.4 LPA</div>
+
+          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-[#e2e8f0] text-[10px] font-mono">
+            <span className="bg-white border border-[#e2e8f0] px-1.5 py-0.5 rounded text-[#334155]">
+              Min ₹2.4 LPA
+            </span>
+            <span className="flex items-center gap-1 text-[#059669] font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>
+              Sync: Active
+            </span>
           </div>
         </div>
+
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header */}
-        <header className="h-16 border-b border-slate-border bg-white px-8 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3 w-96">
-            <div className="relative w-full">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-muted" />
-              <input 
-                type="text" 
-                placeholder="Search roles, companies, tech stacks... (Cmd+K)" 
-                className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-border rounded-md focus:outline-none focus:border-primary"
-              />
-            </div>
+      {/* Main Column Offset by Sidebar (240px) */}
+      <div className="pl-60 flex flex-col flex-1">
+        
+        {/* Top Navigation Bar (Fixed, 56px high) */}
+        <header className="fixed top-0 left-60 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-[#e8eaf6] z-40 flex items-center justify-between px-6 shadow-2xs">
+          
+          {/* Search Input with ⌘K */}
+          <div 
+            onClick={() => setActiveScreen('FIND_JOBS')}
+            className="relative flex items-center w-full max-w-md cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px] text-[#94a3b8] absolute left-3">
+              search
+            </span>
+            <input 
+              readOnly
+              type="text"
+              placeholder="Search roles, companies, tech stacks..."
+              className="w-full h-9 pl-9 pr-12 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg text-xs placeholder-[#94a3b8] focus:outline-none cursor-pointer font-medium"
+            />
+            <kbd className="absolute right-2.5 text-[10px] font-mono bg-white border border-[#e2e8f0] text-[#64748b] px-1.5 py-0.5 rounded pointer-events-none">
+              ⌘K
+            </kbd>
           </div>
 
+          {/* Right Action Widgets */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-medium font-mono">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Crawlers Active • Zero Bond
-            </span>
-            <button className="px-3.5 py-1.5 rounded-md bg-primary text-white text-xs font-medium hover:bg-primary-hover transition">
-              Upload Master Resume
+            
+            {/* Guarantee Pill */}
+            <div className="hidden md:flex items-center gap-1.5 bg-[#ecfdf5] border border-[#a7f3d0] text-[#059669] px-2.5 py-1 rounded-full text-xs font-mono font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
+              <span>Freshers: ≥₹2.4 LPA</span>
+            </div>
+
+            {/* Resume Upload Button */}
+            <button 
+              onClick={() => setIsResumeModalOpen(true)}
+              className="h-8 px-3.5 bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+            >
+              <span className="material-symbols-outlined text-[16px]">upload_file</span>
+              <span className="hidden sm:inline">Upload Master Resume</span>
             </button>
+
+            {/* Notification Bell */}
+            <button 
+              onClick={() => setIsNotificationOpen(true)}
+              className="relative p-1.5 text-[#64748b] hover:text-[#0f172a] rounded-lg"
+            >
+              <span className="material-symbols-outlined text-[20px]">notifications</span>
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#dc2626]"></span>
+            </button>
+
+            {/* Avatar */}
+            <div className="w-8 h-8 rounded-full bg-[#0f172a] text-white font-bold text-xs flex items-center justify-center">
+              AR
+            </div>
+
           </div>
+
         </header>
 
-        {/* View Router */}
-        <main className="flex-1 overflow-y-auto p-8">
-          {activeScreen === 'DASHBOARD' && <DashboardPage onSelectJob={navigateToJob} />}
-          {activeScreen === 'FIND_JOBS' && <FindJobsPage onSelectJob={navigateToJob} />}
-          {activeScreen === 'JOB_DETAILS' && <JobDetailsPage jobId={selectedJobId} onBack={() => setActiveScreen('FIND_JOBS')} />}
+        {/* Dynamic View Router */}
+        <main className="flex-1 pt-14 pb-12 bg-[#faf8ff]">
+          {activeScreen === 'OVERVIEW' && (
+            <DashboardPage 
+              onSelectJob={navigateToJob} 
+              onNavigateToFindJobs={() => setActiveScreen('FIND_JOBS')} 
+            />
+          )}
+
+          {activeScreen === 'FIND_JOBS' && (
+            <FindJobsPage onSelectJob={navigateToJob} />
+          )}
+
+          {activeScreen === 'JOB_DETAILS' && (
+            <JobDetailsPage 
+              jobId={selectedJobId} 
+              onBack={() => setActiveScreen('FIND_JOBS')} 
+            />
+          )}
         </main>
+
       </div>
+
+      {/* Interactive Modal: Upload Master Resume */}
+      {isResumeModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-[#e2e8f0] p-6 flex flex-col gap-4 animate-scale-up">
+            <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[22px] text-[#4338ca]">upload_file</span>
+                <h3 className="font-bold text-base text-[#0f172a]">Master Resume Ingestion</h3>
+              </div>
+              <button onClick={() => setIsResumeModalOpen(false)} className="text-[#94a3b8] hover:text-[#0f172a]">
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-[#64748b] leading-relaxed">
+              Upload your raw unembellished resume (PDF or DOCX). Our deterministic ATS parser will verify skills, calculate dual fit scores, and verify fresher eligibility.
+            </p>
+
+            <label className="border-2 border-dashed border-[#c7d2fe] hover:border-[#4338ca] bg-[#f8fafc] rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition">
+              <span className="material-symbols-outlined text-4xl text-[#4338ca] mb-1">cloud_upload</span>
+              <span className="text-xs font-bold text-[#0f172a]">Click or drag &amp; drop resume file</span>
+              <span className="text-[11px] font-mono text-[#94a3b8] mt-1">PDF or DOCX up to 10MB</span>
+              <input type="file" accept=".pdf,.docx,.doc" className="hidden" onChange={handleFileUpload} />
+            </label>
+
+            {uploadMessage && (
+              <div className="p-2.5 bg-[#ecfdf5] border border-[#a7f3d0] text-[#059669] rounded-lg text-xs font-mono">
+                {uploadMessage}
+              </div>
+            )}
+
+            <div className="text-[11px] font-mono text-[#64748b] flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[15px] text-[#059669]">verified_user</span>
+              <span>100% Privacy: Stored locally only, never sold to recruiters.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Drawer: Notifications */}
+      {isNotificationOpen && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex justify-end">
+          <div className="bg-white w-full max-w-sm h-full shadow-2xl border-l border-[#e2e8f0] flex flex-col justify-between p-5">
+            <div>
+              <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[20px] text-[#4338ca]">notifications</span>
+                  <h3 className="font-bold text-sm text-[#0f172a]">Operational Alerts (3)</h3>
+                </div>
+                <button onClick={() => setIsNotificationOpen(false)} className="text-[#94a3b8] hover:text-[#0f172a]">
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-3 text-xs">
+                <div className="p-3 bg-[#fef2f2] border border-[#fecaca] rounded-lg flex flex-col gap-1">
+                  <div className="flex justify-between font-mono font-bold text-[#dc2626]">
+                    <span>WALK-IN ALERT</span>
+                    <span>15m ago</span>
+                  </div>
+                  <p className="text-[#334155]">
+                    ThoughtWorks Hyderabad Walk-in Drive confirmed for March 15 at Ascendas IT Park.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-[#ecfdf5] border border-[#a7f3d0] rounded-lg flex flex-col gap-1">
+                  <div className="flex justify-between font-mono font-bold text-[#059669]">
+                    <span>NEW HIGH MATCH (94%)</span>
+                    <span>1h ago</span>
+                  </div>
+                  <p className="text-[#334155]">
+                    Razorpay Graduate Software Engineer (₹14.0 LPA) ingested via Greenhouse. Zero fees verified.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg flex flex-col gap-1">
+                  <div className="flex justify-between font-mono font-bold text-[#64748b]">
+                    <span>CRAWLER HEALTH</span>
+                    <span>3h ago</span>
+                  </div>
+                  <p className="text-[#334155]">
+                    All 42 scrapers active across Indian IT sectors with 100% crawl validity.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setIsNotificationOpen(false)}
+              className="w-full py-2 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#334155] rounded-lg text-xs font-semibold font-mono transition"
+            >
+              Close Alerts
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
