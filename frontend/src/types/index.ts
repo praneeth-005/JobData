@@ -241,3 +241,139 @@ export interface JobEligibility {
   hardRules: RuleEvaluation[];
   candidateBreakdown: FactorBreakdown[];
 }
+
+// ==========================================
+// Stitch 6 Interfaces: Resume Intelligence Types
+// ==========================================
+
+export interface ResumeProjectItem {
+  title: string;
+  role: string;
+  techStack: string;
+  bulletPoints: string[];
+  projectUrl?: string;
+  evidenceStrength?: string;
+}
+
+export interface EvidenceItem {
+  skillOrKeyword: string;
+  category: string;
+  lineProof: string;
+  confidencePercent: number;
+  status: 'CONFIRMED' | 'GAP' | 'WEAK';
+}
+
+export interface MatchFactorItem {
+  factorName: string;
+  weightPercent: number;
+  matchPercent: number;
+  detail: string;
+  icon: string;
+}
+
+export interface BulletImprovementItem {
+  id: string;
+  category: string;
+  originalText: string;
+  recommendedText: string;
+  rationale: string;
+  impactLevel: 'High' | 'Medium' | 'Format' | 'Low';
+  context: string;
+}
+
+export interface ResumeVersion {
+  id: string;
+  userId: string;
+  versionNumber: number;
+  versionLabel: string;
+  fileName: string;
+  fileSizeBytes: number;
+  fileSizeFormatted: string;
+  sha256Hash: string;
+  storagePath: string;
+  parsedText?: string;
+  extractedCandidateName: string;
+  extractedEmail: string;
+  extractedPhone: string;
+  extractedDegree: string;
+  extractedGraduationBatch: string;
+  extractedCgpa?: number;
+  extractedSkills: string[];
+  extractedProjects: ResumeProjectItem[];
+  atsScore: number;
+  overallScore: number;
+  status: 'READY' | 'PROCESSING' | 'FAILED';
+  errorMessage?: string;
+  current: boolean;
+  createdAt: string;
+}
+
+export interface ResumeOverview {
+  resume: ResumeVersion;
+  totalSkillsCount: number;
+  totalProjectsCount: number;
+  matchingJobsCount: number;
+  peakMatchPercent: number;
+  topMatchingCompany: string;
+  topSkills: string[];
+  projects: ResumeProjectItem[];
+  atsScore: number;
+  overallQualityScore: number;
+}
+
+export interface JobMatchItem {
+  jobId: string;
+  company: string;
+  title: string;
+  logoText: string;
+  ctcText: string;
+  workMode: string;
+  matchScore: number;
+  resumeScore: number;
+  tag: string;
+  confirmedEvidence: EvidenceItem[];
+  missingPrerequisites: string[];
+  weakEvidence: string[];
+  matchFactors: MatchFactorItem[];
+}
+
+export interface MultiJobMatchResponse {
+  resumeVersionId: string;
+  resumeLabel: string;
+  totalOpportunitiesEvaluated: number;
+  activeTargetJobId: string;
+  evaluatedJobs: JobMatchItem[];
+}
+
+export interface ImprovementsResponse {
+  resumeVersionId: string;
+  resumeLabel: string;
+  totalSuggestions: number;
+  highPriorityCount: number;
+  mediumPriorityCount: number;
+  formatStyleCount: number;
+  suggestions: BulletImprovementItem[];
+}
+
+export interface VersionDiffResponse {
+  fromVersion: ResumeVersion;
+  toVersion: ResumeVersion;
+  atsScoreDelta: number;
+  skillCountDelta: number;
+  addedSkills: string[];
+  removedWeakPhrases: string[];
+  summary: string;
+}
+
+export interface ResumeUploadResponse {
+  id: string;
+  versionLabel: string;
+  fileName: string;
+  fileSizeBytes: number;
+  sha256Hash: string;
+  atsScore: number;
+  overallScore: number;
+  status: string;
+  extractedSkills: string[];
+  message: string;
+}

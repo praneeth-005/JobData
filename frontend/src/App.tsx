@@ -13,7 +13,17 @@ import JobPreferencesPage from './pages/JobPreferencesPage';
 import JobSourcesPage from './pages/JobSourcesPage';
 import CheckJobsPage from './pages/CheckJobsPage';
 import RecentlyFoundJobsPage from './pages/RecentlyFoundJobsPage';
+
+// Stitch 6 Interfaces: Resume Intelligence
+import MyResumePage from './pages/MyResumePage';
+import ResumeUploadPage from './pages/ResumeUploadPage';
+import ResumeAnalysisOverviewPage from './pages/ResumeAnalysisOverviewPage';
+import ResumeJobMatchPage from './pages/ResumeJobMatchPage';
+import ResumeImprovementsPage from './pages/ResumeImprovementsPage';
+import ResumeHistoryVersionsPage from './pages/ResumeHistoryVersionsPage';
+
 import { UserProfile } from './types';
+import { ResumeTab } from './components/ResumeSubNav';
 
 export type Screen = 
   | 'OVERVIEW' 
@@ -28,11 +38,17 @@ export type Screen =
   | 'JOB_SOURCES'
   | 'CHECK_JOBS'
   | 'RECENTLY_FOUND'
+  | 'RESUME_HUB'
+  | 'RESUME_UPLOAD'
+  | 'RESUME_ANALYSIS'
+  | 'RESUME_MATCHING'
+  | 'RESUME_IMPROVEMENTS'
+  | 'RESUME_VERSIONS'
   | 'SIGN_IN' 
   | 'SIGN_UP';
 
 export default function App() {
-  const [activeScreen, setActiveScreen] = useState<Screen>('OVERVIEW');
+  const [activeScreen, setActiveScreen] = useState<Screen>('RESUME_HUB');
   const [selectedJobId, setSelectedJobId] = useState<string>('job-tw');
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -46,22 +62,22 @@ export default function App() {
   // Candidate Profile State (synchronized with MongoDB Atlas)
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullName: 'Arjun Rao',
-    email: 'arjun@college.edu',
+    email: 'arjun.rao@example.com',
     emailVerified: true,
-    graduationYear: '2025',
+    graduationYear: '2026',
     degree: 'B.Tech / B.E.',
     specialization: 'Computer Science & Engineering',
     collegeName: 'RV College of Engineering, Bengaluru',
-    phone: '98452 11094',
-    cgpa: '8.4',
-    skills: ['Java', 'Spring Boot', 'PostgreSQL', 'React', 'Git'],
-    targetRoles: ['Backend Developer', 'Software Engineer', 'Java Developer', 'QA / Test Automation Engineer'],
+    phone: '+91 98765 43210',
+    cgpa: '8.65',
+    skills: ['Java 21', 'Spring Boot', 'PostgreSQL', 'Apache Kafka', 'Docker', 'Git', 'JUnit 5'],
+    targetRoles: ['Backend Developer', 'Software Engineer', 'Java Consultant', 'Microservices Engineer'],
     preferredLocations: ['Bengaluru', 'Hyderabad', 'Pune'],
     workModes: ['Hybrid', 'On-site'],
     employmentTypes: ['Full-time Direct Hire', 'Paid Technical Internships'],
     interviewPreference: 'online',
     workingDaysPreference: '5_days',
-    salaryFloorLpa: 2.4,
+    salaryFloorLpa: 8.5,
   });
 
   // Fetch initial profile from MongoDB Atlas if available
@@ -110,13 +126,20 @@ export default function App() {
     if (e.target.files && e.target.files[0]) {
       setUploadMessage('Parsing master resume against 18 fresher specifications...');
       setTimeout(() => {
-        setUploadMessage('✓ Master Resume (Arjun_Rao_2025.pdf) analyzed! 14 verified skills synced.');
+        setUploadMessage('✓ Master Resume (Arjun_Rao_Resume_v2.1.pdf) analyzed! 14 verified skills synced.');
         setTimeout(() => {
           setUploadMessage(null);
           setIsResumeModalOpen(false);
-        }, 1800);
+          setActiveScreen('RESUME_HUB');
+        }, 1500);
       }, 1000);
     }
+  };
+
+  const handleResumeTabNav = (tab: ResumeTab) => {
+    setActiveScreen(tab as Screen);
+    setIsMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Standalone Auth views render without chrome
@@ -129,7 +152,7 @@ export default function App() {
             fullName: user.name,
             email: user.email,
           }));
-          setActiveScreen('OVERVIEW');
+          setActiveScreen('RESUME_HUB');
         }}
         onNavigateToSignUp={() => setActiveScreen('SIGN_UP')}
       />
@@ -145,7 +168,7 @@ export default function App() {
             fullName: user.name,
             email: user.email,
           }));
-          setActiveScreen('OVERVIEW');
+          setActiveScreen('RESUME_HUB');
         }}
         onNavigateToSignIn={() => setActiveScreen('SIGN_IN')}
       />
@@ -168,7 +191,7 @@ export default function App() {
           
           {/* Logo Brand Header */}
           <div className="h-14 px-4 flex items-center justify-between border-b border-[#f1f5f9]">
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveScreen('OVERVIEW')}>
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveScreen('RESUME_HUB')}>
               <div className="w-8 h-8 rounded-lg bg-[#4338ca] text-white flex items-center justify-center font-bold text-sm shadow-xs">
                 IT
               </div>
@@ -176,8 +199,8 @@ export default function App() {
                 <div className="text-[13px] font-bold text-[#0f172a] tracking-tight leading-tight">
                   IT Career Partner
                 </div>
-                <div className="text-[10px] font-mono text-[#94a3b8] uppercase">
-                  IND FRESHER v1.0
+                <div className="text-[10px] font-mono text-[#059669] uppercase font-bold">
+                  2026 FRESHER SUITE
                 </div>
               </div>
             </div>
@@ -194,10 +217,124 @@ export default function App() {
           {/* Nav Items List */}
           <div className="p-3 flex flex-col gap-4 overflow-y-auto flex-1 text-xs font-medium text-[#64748b]">
             
+            {/* Group: RESUME INTELLIGENCE (Stitch 6 Interfaces) */}
+            <div className="flex flex-col gap-1">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#4338ca] font-extrabold flex items-center justify-between">
+                <span>RESUME INTELLIGENCE</span>
+                <span className="text-[9px] bg-[#eef2ff] px-1.5 py-0.2 rounded font-bold">STITCH 6</span>
+              </span>
+
+              {/* 1. My Resume Hub */}
+              <button 
+                onClick={() => { setActiveScreen('RESUME_HUB'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'RESUME_HUB'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">description</span>
+                  <span>My Resume Hub</span>
+                </div>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'RESUME_HUB' ? 'bg-white/20 text-white' : 'bg-[#ecfdf5] text-[#059669]'
+                }`}>
+                  v2.1 Active
+                </span>
+              </button>
+
+              {/* 2. Upload & Validate */}
+              <button 
+                onClick={() => { setActiveScreen('RESUME_UPLOAD'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'RESUME_UPLOAD'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">upload_file</span>
+                  <span>Upload &amp; Validate</span>
+                </div>
+                <span className="text-[10px] font-mono text-[#64748b]">PDF &lt; 5MB</span>
+              </button>
+
+              {/* 3. Analysis Overview */}
+              <button 
+                onClick={() => { setActiveScreen('RESUME_ANALYSIS'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'RESUME_ANALYSIS'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">analytics</span>
+                  <span>Analysis Overview</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.5 rounded">
+                  91 ATS
+                </span>
+              </button>
+
+              {/* 4. Job Matching */}
+              <button 
+                onClick={() => { setActiveScreen('RESUME_MATCHING'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'RESUME_MATCHING'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">join_inner</span>
+                  <span>Job Matching</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#faf5ff] text-[#9333ea] font-bold px-1.5 py-0.5 rounded">
+                  94% Peak
+                </span>
+              </button>
+
+              {/* 5. Actionable Improvements */}
+              <button 
+                onClick={() => { setActiveScreen('RESUME_IMPROVEMENTS'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'RESUME_IMPROVEMENTS'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">auto_fix_high</span>
+                  <span>Improvements</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#fffbeb] text-[#d97706] font-bold px-1.5 py-0.5 rounded">
+                  5 XYZ
+                </span>
+              </button>
+
+              {/* 6. Version History & Diffs */}
+              <button 
+                onClick={() => { setActiveScreen('RESUME_VERSIONS'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'RESUME_VERSIONS'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">history</span>
+                  <span>Version History</span>
+                </div>
+                <span className="text-[10px] font-mono text-[#64748b]">3 Logs</span>
+              </button>
+            </div>
+
             {/* Group: DISCOVERY */}
             <div className="flex flex-col gap-1">
               <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
-                DISCOVERY
+                DISCOVERY & FEED
               </span>
 
               <button 
@@ -212,17 +349,13 @@ export default function App() {
                   <span className="material-symbols-outlined text-[17px]">grid_view</span>
                   <span>Overview</span>
                 </div>
-                {activeScreen === 'OVERVIEW' && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4338ca]"></span>
-                )}
               </button>
 
-              {/* Stitch Interface 1: Find Jobs (Discovery Dashboard) */}
               <button 
                 onClick={() => { setActiveScreen('FIND_JOBS'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
                   activeScreen === 'FIND_JOBS'
-                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
                     : 'hover:bg-[#f8fafc] text-[#334155]'
                 }`}
               >
@@ -230,32 +363,28 @@ export default function App() {
                   <span className="material-symbols-outlined text-[17px]">work</span>
                   <span>Find Jobs</span>
                 </div>
-                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
-                  activeScreen === 'FIND_JOBS' ? 'bg-white/20 text-white' : 'bg-[#ecfdf5] text-[#059669]'
-                }`}>
-                  Live
+                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] px-1.5 py-0.5 rounded font-bold">
+                  2026 Live
                 </span>
               </button>
 
-              {/* Stitch Interface 2: Search & Filter Jobs (Software IT Company Search) */}
               <button 
                 onClick={() => { setActiveScreen('SEARCH_FILTER'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
                   activeScreen === 'SEARCH_FILTER'
-                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
                     : 'hover:bg-[#f8fafc] text-[#334155]'
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[17px]">search_insights</span>
-                  <span>Search &amp; Filter</span>
+                  <span>Company Search</span>
                 </div>
                 <span className="text-[10px] font-mono bg-[#eef2ff] text-[#4338ca] font-bold px-1.5 py-0.5 rounded">
-                  Company
+                  IT
                 </span>
               </button>
 
-              {/* Stitch Interface: Job Sources */}
               <button 
                 onClick={() => { setActiveScreen('JOB_SOURCES'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -271,7 +400,6 @@ export default function App() {
                 <span className="text-[10px] font-mono text-[#64748b]">12 Portals</span>
               </button>
 
-              {/* Stitch Interface: Check for Jobs */}
               <button 
                 onClick={() => { setActiveScreen('CHECK_JOBS'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -281,13 +409,14 @@ export default function App() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">sync</span>
+                  <span className="material-symbols-outlined text-[17px]">travel_explore</span>
                   <span>Check for Jobs</span>
                 </div>
-                <span className="w-2 h-2 rounded-full bg-[#0f766e] animate-pulse"></span>
+                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.5 rounded">
+                  Scan
+                </span>
               </button>
 
-              {/* Stitch Interface: Recently Found */}
               <button 
                 onClick={() => { setActiveScreen('RECENTLY_FOUND'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -297,22 +426,21 @@ export default function App() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">auto_awesome</span>
+                  <span className="material-symbols-outlined text-[17px]">history_edu</span>
                   <span>Recently Found</span>
                 </div>
                 <span className="text-[10px] font-mono bg-[#eef2ff] text-[#4338ca] font-bold px-1.5 py-0.5 rounded">
-                  Verified
+                  Real-time
                 </span>
               </button>
             </div>
 
-            {/* Group: JOB ARCHITECTURE & FIT */}
+            {/* Group: APPLICATION & FIT */}
             <div className="flex flex-col gap-1">
               <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
-                FIT &amp; ARCHITECTURE
+                FIT &amp; EVALUATION
               </span>
 
-              {/* Stitch Interface 3: Job Details & Fit Analysis */}
               <button 
                 onClick={() => { setActiveScreen('JOB_DETAILS'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -322,15 +450,11 @@ export default function App() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">badge</span>
-                  <span>Job Details &amp; Fit</span>
+                  <span className="material-symbols-outlined text-[17px]">info</span>
+                  <span>Job Details</span>
                 </div>
-                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.5 rounded">
-                  88% Fit
-                </span>
               </button>
 
-              {/* Stitch Interface 4: Eligibility & Match Explanation */}
               <button 
                 onClick={() => { setActiveScreen('ELIGIBILITY_EXPLANATION'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -340,13 +464,11 @@ export default function App() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">psychology</span>
+                  <span className="material-symbols-outlined text-[17px]">rule</span>
                   <span>Eligibility Matrix</span>
                 </div>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
               </button>
 
-              {/* Stitch Interface 5: States & Feedback Library */}
               <button 
                 onClick={() => { setActiveScreen('STATES_FEEDBACK'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -359,9 +481,6 @@ export default function App() {
                   <span className="material-symbols-outlined text-[17px]">layers</span>
                   <span>States &amp; Feedback</span>
                 </div>
-                <span className="text-[10px] font-mono bg-[#fef3c7] text-[#b45309] font-bold px-1.5 py-0.5 rounded">
-                  Library
-                </span>
               </button>
             </div>
 
@@ -371,7 +490,6 @@ export default function App() {
                 CANDIDATE CALIBRATION
               </span>
 
-              {/* Profile Overview */}
               <button 
                 onClick={() => { setActiveScreen('MY_PROFILE'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -385,11 +503,10 @@ export default function App() {
                   <span>Profile Overview</span>
                 </div>
                 <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#0f766e] font-bold px-1.5 py-0.5 rounded">
-                  Tier 1
+                  2026 Grad
                 </span>
               </button>
 
-              {/* Edit Profile */}
               <button 
                 onClick={() => { setActiveScreen('EDIT_PROFILE'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -402,12 +519,8 @@ export default function App() {
                   <span className="material-symbols-outlined text-[17px]">edit_square</span>
                   <span>Edit Credentials</span>
                 </div>
-                <span className="text-[10px] font-mono text-[#64748b]">
-                  {userProfile.skills?.length || 5} Stack
-                </span>
               </button>
 
-              {/* Job Preferences */}
               <button 
                 onClick={() => { setActiveScreen('JOB_PREFERENCES'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -420,22 +533,29 @@ export default function App() {
                   <span className="material-symbols-outlined text-[17px]">tune</span>
                   <span>Job Preferences</span>
                 </div>
-                <span className="text-[10px] font-mono bg-[#fffbeb] text-[#b45309] font-bold px-1.5 py-0.5 rounded">
-                  &gt; ₹2.4L
-                </span>
               </button>
             </div>
 
           </div>
 
-          {/* Footer Candidate Status Bar */}
+          {/* User profile footer card in sidebar */}
           <div className="p-3 border-t border-[#f1f5f9] bg-[#faf8ff]">
-            <div className="p-2.5 rounded-lg bg-white border border-[#e2e8f0] flex items-center justify-between shadow-2xs">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#059669]"></span>
-                <span className="text-[11px] font-bold font-mono text-[#059669]">READY TO RELOCATE</span>
+            <div 
+              onClick={() => setActiveScreen('RESUME_HUB')}
+              className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-white cursor-pointer transition"
+            >
+              <div className="w-8 h-8 rounded-full bg-[#4338ca] text-white font-bold text-xs flex items-center justify-center shrink-0">
+                {initials}
               </div>
-              <span className="text-[10px] font-mono text-[#64748b]">IND</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-[#0f172a] truncate">
+                  {userProfile.fullName || 'Arjun Rao'}
+                </div>
+                <div className="text-[10px] font-mono text-[#059669] truncate">
+                  2026 Batch • Master v2.1
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-[16px] text-[#94a3b8]">open_in_new</span>
             </div>
           </div>
 
@@ -460,6 +580,12 @@ export default function App() {
             <div className="flex items-center gap-2 text-xs font-mono text-[#64748b]">
               <span>/</span>
               <span className="font-bold text-[#0f172a]">
+                {activeScreen === 'RESUME_HUB' && 'Executive Master Resume (v2.1)'}
+                {activeScreen === 'RESUME_UPLOAD' && 'Upload & Validation Center'}
+                {activeScreen === 'RESUME_ANALYSIS' && 'Resume Analysis Overview'}
+                {activeScreen === 'RESUME_MATCHING' && 'Resume-to-Job Matching Engine'}
+                {activeScreen === 'RESUME_IMPROVEMENTS' && 'Actionable Improvements (Google XYZ Formula)'}
+                {activeScreen === 'RESUME_VERSIONS' && 'Analysis History & Version Control'}
                 {activeScreen === 'OVERVIEW' && 'Executive Workspace'}
                 {activeScreen === 'FIND_JOBS' && 'Verified Opportunities (Discovery)'}
                 {activeScreen === 'SEARCH_FILTER' && 'Search & Filter Jobs (Company Search)'}
@@ -478,13 +604,13 @@ export default function App() {
 
           <div className="flex items-center gap-3">
             
-            {/* Quick Upload Action */}
+            {/* Quick Master Resume Action */}
             <button 
-              onClick={() => setIsResumeModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#334155] rounded-md text-xs font-mono font-medium transition"
+              onClick={() => setActiveScreen('RESUME_HUB')}
+              className="flex items-center gap-1.5 px-3 py-1 bg-[#eef2ff] hover:bg-[#e0e7ff] text-[#4338ca] rounded-md text-xs font-mono font-bold transition"
             >
-              <span className="material-symbols-outlined text-[16px] text-[#4338ca]">upload</span>
-              <span>Upload Resume</span>
+              <span className="material-symbols-outlined text-[16px]">description</span>
+              <span>My Resume (v2.1)</span>
             </button>
 
             {/* Notification Bell */}
@@ -511,6 +637,48 @@ export default function App() {
 
         {/* Dynamic View Router */}
         <main className="flex-1 bg-[#faf8ff]">
+
+          {/* Stitch 6 Interfaces: Resume Intelligence */}
+          {activeScreen === 'RESUME_HUB' && (
+            <div className="p-4 sm:p-8">
+              <MyResumePage onNavigateToTab={handleResumeTabNav} />
+            </div>
+          )}
+
+          {activeScreen === 'RESUME_UPLOAD' && (
+            <div className="p-4 sm:p-8">
+              <ResumeUploadPage onNavigateToTab={handleResumeTabNav} />
+            </div>
+          )}
+
+          {activeScreen === 'RESUME_ANALYSIS' && (
+            <div className="p-4 sm:p-8">
+              <ResumeAnalysisOverviewPage onNavigateToTab={handleResumeTabNav} />
+            </div>
+          )}
+
+          {activeScreen === 'RESUME_MATCHING' && (
+            <div className="p-4 sm:p-8">
+              <ResumeJobMatchPage 
+                onNavigateToTab={handleResumeTabNav} 
+                onApplyJob={(id) => { setSelectedJobId(id); setActiveScreen('JOB_DETAILS'); }}
+              />
+            </div>
+          )}
+
+          {activeScreen === 'RESUME_IMPROVEMENTS' && (
+            <div className="p-4 sm:p-8">
+              <ResumeImprovementsPage onNavigateToTab={handleResumeTabNav} />
+            </div>
+          )}
+
+          {activeScreen === 'RESUME_VERSIONS' && (
+            <div className="p-4 sm:p-8">
+              <ResumeHistoryVersionsPage onNavigateToTab={handleResumeTabNav} />
+            </div>
+          )}
+
+          {/* Existing App Pages */}
           {activeScreen === 'OVERVIEW' && (
             <DashboardPage 
               onSelectJob={navigateToJob} 
@@ -518,7 +686,6 @@ export default function App() {
             />
           )}
 
-          {/* Stitch Interface 1: Find Jobs (Discovery Dashboard) */}
           {activeScreen === 'FIND_JOBS' && (
             <FindJobsPage 
               onSelectJob={navigateToJob} 
@@ -527,7 +694,6 @@ export default function App() {
             />
           )}
 
-          {/* Stitch Interface 2: Search & Filter Jobs (Software IT Company Search) */}
           {activeScreen === 'SEARCH_FILTER' && (
             <SearchFilterJobsPage 
               onSelectJob={navigateToJob}
@@ -535,7 +701,6 @@ export default function App() {
             />
           )}
 
-          {/* Stitch Interface 3: Job Details & Fit Analysis */}
           {activeScreen === 'JOB_DETAILS' && (
             <JobDetailsPage 
               jobId={selectedJobId} 
@@ -544,7 +709,6 @@ export default function App() {
             />
           )}
 
-          {/* Stitch Interface 4: Eligibility & Match Explanation */}
           {activeScreen === 'ELIGIBILITY_EXPLANATION' && (
             <EligibilityExplanationPage 
               jobId={selectedJobId}
@@ -553,7 +717,6 @@ export default function App() {
             />
           )}
 
-          {/* Stitch Interface 5: States & Feedback Library */}
           {activeScreen === 'STATES_FEEDBACK' && (
             <StatesAndFeedbackLibraryPage 
               onNavigateToFindJobs={() => setActiveScreen('FIND_JOBS')}
@@ -561,7 +724,6 @@ export default function App() {
             />
           )}
 
-          {/* Stitch Interface: Job Sources */}
           {activeScreen === 'JOB_SOURCES' && (
             <JobSourcesPage 
               onNavigateToCheckJobs={handleStartScanForCompany}
@@ -569,7 +731,6 @@ export default function App() {
             />
           )}
 
-          {/* Stitch Interface: Check for Jobs */}
           {activeScreen === 'CHECK_JOBS' && (
             <CheckJobsPage 
               initialCompanyName={scanCompany}
@@ -579,7 +740,6 @@ export default function App() {
             />
           )}
 
-          {/* Stitch Interface: Recently Found Jobs */}
           {activeScreen === 'RECENTLY_FOUND' && (
             <RecentlyFoundJobsPage 
               onSelectJob={navigateToJob}
@@ -588,17 +748,15 @@ export default function App() {
             />
           )}
 
-          {/* Profile Overview */}
           {activeScreen === 'MY_PROFILE' && (
             <ProfileOverviewPage 
               profile={userProfile}
               onNavigateToEditProfile={() => setActiveScreen('EDIT_PROFILE')}
               onNavigateToPreferences={() => setActiveScreen('JOB_PREFERENCES')}
-              onNavigateToDashboard={() => setActiveScreen('OVERVIEW')}
+              onNavigateToDashboard={() => setActiveScreen('RESUME_HUB')}
             />
           )}
 
-          {/* Edit Profile */}
           {activeScreen === 'EDIT_PROFILE' && (
             <EditProfilePage 
               profile={userProfile}
@@ -610,7 +768,6 @@ export default function App() {
             />
           )}
 
-          {/* Job Preferences */}
           {activeScreen === 'JOB_PREFERENCES' && (
             <JobPreferencesPage 
               profile={userProfile}
@@ -645,7 +802,7 @@ export default function App() {
             <label className="border-2 border-dashed border-[#c7d2fe] hover:border-[#4338ca] bg-[#f8fafc] rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition">
               <span className="material-symbols-outlined text-4xl text-[#4338ca] mb-1">cloud_upload</span>
               <span className="text-xs font-bold text-[#0f172a]">Click or drag & drop resume file</span>
-              <span className="text-[11px] font-mono text-[#94a3b8] mt-1">PDF or DOCX up to 10MB</span>
+              <span className="text-[11px] font-mono text-[#94a3b8] mt-1">PDF or DOCX up to 5MB</span>
               <input type="file" accept=".pdf,.docx,.doc" className="hidden" onChange={handleFileUpload} />
             </label>
 
@@ -655,9 +812,17 @@ export default function App() {
               </div>
             )}
 
-            <div className="text-[11px] font-mono text-[#64748b] flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[15px] text-[#059669]">verified_user</span>
-              <span>100% Privacy: Stored locally only, never sold to third parties.</span>
+            <div className="flex items-center justify-between pt-2 border-t border-[#f1f5f9]">
+              <button
+                onClick={() => {
+                  setIsResumeModalOpen(false);
+                  setActiveScreen('RESUME_UPLOAD');
+                }}
+                className="text-xs font-bold text-[#4338ca] hover:underline"
+              >
+                Go to Advanced Validation Center →
+              </button>
+              <span className="text-[10px] font-mono text-[#059669] font-bold">Private Storage Enclave</span>
             </div>
           </div>
         </div>
@@ -672,12 +837,12 @@ export default function App() {
           </div>
           <div className="flex flex-col gap-2 text-xs">
             <div className="p-2 rounded-lg bg-[#f0fdf4] border border-[#bbf7d0]">
-              <div className="font-bold text-[#15803d]">Thoughtworks ATS Ingested</div>
-              <div className="text-[11px] text-[#166534]">Graduate SWE (₹8.5 LPA) passed all 5 mandatory eligibility rules.</div>
+              <div className="font-bold text-[#15803d]">Thoughtworks Match Ready</div>
+              <div className="text-[11px] text-[#166534]">Arjun Rao v2.1 reached 94% alignment with Graduate SWE.</div>
             </div>
             <div className="p-2 rounded-lg bg-[#f8fafc] border border-[#e2e8f0]">
               <div className="font-bold text-[#334155]">Swiggy Tech Careers Ingested</div>
-              <div className="text-[11px] text-[#64748b]">Associate Software Engineer 2026 / 2025 batch verified with zero bond.</div>
+              <div className="text-[11px] text-[#64748b]">Associate Software Engineer 2026 batch verified with zero bond.</div>
             </div>
           </div>
           <button 
