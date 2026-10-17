@@ -57,7 +57,8 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
       .then(res => res.ok ? res.json() : null)
       .then(json => {
         if (json && json.data && json.data.jobs) {
-          setJobs(json.data.jobs);
+          let list = (json.data.jobs as FoundJob[]).filter(j => j.batchAllowed && j.batchAllowed.includes('2026'));
+          setJobs(list);
         } else {
           loadFallbackJobs();
         }
@@ -85,7 +86,7 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         roleCategory: 'Distributed Microservices',
         bondText: 'Zero Bond / No Service Agreement',
@@ -104,7 +105,7 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
       {
         id: 'job-swg',
         jobCode: 'SWG-2025-ASE',
-        title: 'Associate Software Engineer - 2025 Batch',
+        title: 'Associate Software Engineer - 2026 / 2025 Batch',
         company: 'Swiggy',
         location: 'Bengaluru • Hybrid',
         city: 'Bengaluru',
@@ -114,7 +115,7 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years (Fresher)',
         roleCategory: 'Hyperlocal Logistics Engine',
         bondText: 'Zero Bond Guarantee',
@@ -143,7 +144,7 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         roleCategory: 'Core Payments Engine',
         bondText: 'Zero Bond Guarantee',
@@ -172,7 +173,7 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         roleCategory: 'Global E-Commerce Services',
         bondText: 'Zero Bond Guarantee',
@@ -230,7 +231,7 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         roleCategory: 'High-End Complex Architecture & AI',
         bondText: 'Zero Bond Guarantee',
@@ -608,7 +609,7 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
                     </span>
                     <span>•</span>
                     <span className="text-[#64748b]">
-                      {job.batchAllowed || '2024 / 2025'} Batch
+                      {job.batchAllowed || '2026 / 2025'} Batch
                     </span>
                   </div>
 

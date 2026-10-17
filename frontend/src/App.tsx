@@ -677,7 +677,7 @@ export default function App() {
             </div>
             <div className="p-2 rounded-lg bg-[#f8fafc] border border-[#e2e8f0]">
               <div className="font-bold text-[#334155]">Swiggy Tech Careers Ingested</div>
-              <div className="text-[11px] text-[#64748b]">Associate Software Engineer 2025 batch verified with zero bond.</div>
+              <div className="text-[11px] text-[#64748b]">Associate Software Engineer 2026 / 2025 batch verified with zero bond.</div>
             </div>
           </div>
           <button 

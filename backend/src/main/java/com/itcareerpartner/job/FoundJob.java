@@ -23,7 +23,7 @@ public class FoundJob {
     private String jobType; // FULL_TIME, INTERNSHIP, TRAINEE
     private String workMode; // "Hybrid", "Remote", "On-site"
     private String interviewMode; // "VIRTUAL", "WALK_IN", "HYBRID"
-    private String batchAllowed; // "2024 / 2025"
+    private String batchAllowed; // "2026 / 2025"
     private String experienceText; // "0 Years / Entry-Level"
     private String roleCategory;
     private String bondText; // "Zero Bond / No Service Agreement"
@@ -55,7 +55,7 @@ public class FoundJob {
         this.resumeMatchScore = 85;
         this.workMode = "Hybrid";
         this.interviewMode = "VIRTUAL";
-        this.batchAllowed = "2024 / 2025";
+        this.batchAllowed = "2026 / 2025";
     }
 
     public FoundJob(String title, String company, String location, String city, String ctcText, Double ctcLpa,

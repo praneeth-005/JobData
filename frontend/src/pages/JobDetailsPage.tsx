@@ -47,7 +47,7 @@ export default function JobDetailsPage({ jobId, onBack, onNavigateToEligibility 
       jobType: 'FULL_TIME',
       workMode: 'Hybrid (3 Days Office / 2 Days Remote)',
       interviewMode: 'VIRTUAL',
-      batchAllowed: '2024 / 2025 B.Tech / B.E. / MCA',
+      batchAllowed: '2026 / 2025 B.Tech / B.E. / MCA',
       experienceText: '0 Years / Strict Fresher Scope',
       roleCategory: 'Core Software Engineering & Distributed Microservices',
       bondText: 'Zero Bond Guarantee / No Financial Agreement',
@@ -202,7 +202,7 @@ export default function JobDetailsPage({ jobId, onBack, onNavigateToEligibility 
           </div>
           <div className="bg-[#f8fafc] p-3 rounded-xl border border-[#e2e8f0]">
             <span className="text-[10.5px] font-mono text-[#64748b] uppercase block">Batch Permitted</span>
-            <span className="text-sm font-bold text-[#0f172a]">{job.batchAllowed || '2024 / 2025 Batch'}</span>
+            <span className="text-sm font-bold text-[#0f172a]">{job.batchAllowed || '2026 / 2025 Batch'}</span>
           </div>
           <div className="bg-[#f8fafc] p-3 rounded-xl border border-[#e2e8f0]">
             <span className="text-[10.5px] font-mono text-[#64748b] uppercase block">Bond & Penalty Pledge</span>

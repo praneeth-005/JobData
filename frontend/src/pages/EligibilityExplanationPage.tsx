@@ -39,7 +39,7 @@ export default function EligibilityExplanationPage({ jobId, onBack, onSelectJob 
     const fallback: JobEligibility = {
       jobId: jobId || 'SWG-2025-ASE',
       company: 'Swiggy Technologies',
-      title: 'Associate Software Engineer - 2025 Batch',
+      title: 'Associate Software Engineer - 2026 / 2025 Batch',
       ctcText: '₹6.00 LPA (Fixed Gross)',
       ctcLpa: 6.0,
       overallFitScore: 88,
@@ -56,9 +56,9 @@ export default function EligibilityExplanationPage({ jobId, onBack, onSelectJob 
         },
         {
           ruleNumber: 2,
-          ruleName: 'Fresher & Entry-Level Scope',
+          ruleName: '2026 Batch & Fresher Scope',
           status: 'Pass',
-          detail: 'Explicitly accepts 0 Years (Fresher) experience requirement. Specifically targets 2024 graduates and 2025 outgoing batch candidates.'
+          detail: 'Explicitly includes 2026 passed out batch graduates (alongside 2025/2024). Disqualifies roles restricted only to older alumni without 2026 eligibility.'
         },
         {
           ruleNumber: 3,

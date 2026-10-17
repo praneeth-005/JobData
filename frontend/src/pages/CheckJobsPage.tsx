@@ -145,7 +145,7 @@ export default function CheckJobsPage({
 
             <div className="flex items-center gap-2 bg-[#f1f5f9] px-4 py-1.5 rounded-full self-start md:self-auto border border-[#e2e8f0]">
               <span className="w-2 h-2 rounded-full bg-[#0f766e] animate-pulse"></span>
-              <span className="font-mono text-xs text-[#0f172a] font-medium">Auto-sync active · 2024-2025 Batch</span>
+              <span className="font-mono text-xs text-[#0f172a] font-medium">Auto-sync active · 2026 / 2025 Batch</span>
             </div>
           </div>
         </div>

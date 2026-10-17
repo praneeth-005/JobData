@@ -51,7 +51,7 @@ export default function SignUpPage({ onSignUpSuccess, onNavigateToSignIn }: Sign
           fullName: fullName.trim(),
           email: email.trim(),
           password,
-          graduationYear: '2025 Batch',
+          graduationYear: '2026 Batch',
           degree: 'B.Tech Computer Science',
           targetTrack: 'Full Stack',
           agreeCharter

@@ -166,12 +166,15 @@ class JobFeaturesTest {
         FoundJob j1 = new FoundJob("Associate Software Engineer", "Rakuten", "Bengaluru", "Bengaluru", "₹9.0 LPA", 9.0, "FULL_TIME", "Verified Fresher", "VERIFIED", "1h ago", "Rakuten Portal", "https://rakuten.in", "RAK", null);
         j1.setSkills(List.of("Java", "Spring Boot", "React"));
         j1.setWorkMode("Hybrid");
+        j1.setBatchAllowed("2026 / 2025");
         FoundJob j2 = new FoundJob("Junior Developer", "Zoho", "Chennai", "Chennai", "₹5.6 LPA", 5.6, "FULL_TIME", "Verified Fresher", "VERIFIED", "2h ago", "Zoho Portal", "https://zoho.com", "ZH", null);
         j2.setSkills(List.of("Java", "C++", "SQL"));
         j2.setWorkMode("On-site");
+        j2.setBatchAllowed("2026 / 2025 / 2024");
         FoundJob j3 = new FoundJob("Software Engineer Backend", "Swiggy", "Bengaluru", "Bengaluru", "₹6.0 LPA", 6.0, "FULL_TIME", "Verified Fresher", "VERIFIED", "3h ago", "Swiggy Portal", "https://swiggy.com", "SW", null);
         j3.setSkills(List.of("Go", "Java", "Kafka"));
         j3.setWorkMode("Hybrid");
+        j3.setBatchAllowed("2026 / 2025");
         mockJobs.add(j1);
         mockJobs.add(j2);
         mockJobs.add(j3);
@@ -240,6 +243,7 @@ class JobFeaturesTest {
         FoundJob swiggyJob = new FoundJob("Associate Software Engineer", "Swiggy", "Bengaluru", "Bengaluru", "₹6.0 LPA", 6.0, "FULL_TIME", "Verified Fresher", "VERIFIED", "1h ago", "Swiggy Portal", "https://swiggy.com", "SW", null);
         swiggyJob.setId("job-swg");
         swiggyJob.setJobMatchScore(88);
+        swiggyJob.setBatchAllowed("2026 / 2025");
 
         when(foundJobRepository.findById("job-swg")).thenReturn(Optional.of(swiggyJob));
 
@@ -252,5 +256,26 @@ class JobFeaturesTest {
         assertEquals("Pass", eligibility.getHardRules().get(2).getStatus()); // Full-time salary floor >= 2.4L
         assertEquals(88, eligibility.getOverallFitScore());
         assertEquals(5, eligibility.getCandidateBreakdown().size());
+    }
+
+    @Test
+    @DisplayName("Mandatory 2026 Batch Enforcement: Excludes jobs that do not include 2026 passout batch")
+    void testMandatory2026BatchEnforcement() {
+        List<FoundJob> jobs = new ArrayList<>();
+        FoundJob j2026 = new FoundJob("SWE 2026", "Swiggy", "Bengaluru", "Bengaluru", "₹16.0 LPA", 6.0, "FULL_TIME", "Verified Fresher", "VERIFIED", "10m ago", "Swiggy Portal", "https://swiggy.com", "SW", null);
+        j2026.setBatchAllowed("2026 / 2025");
+
+        FoundJob jNo2026 = new FoundJob("Older Opening", "Infosys", "Bengaluru", "Bengaluru", "₹9.5 LPA", 9.5, "FULL_TIME", "Verified Fresher", "VERIFIED", "1h ago", "Infy Portal", "https://infy.com", "INF", null);
+        jNo2026.setBatchAllowed("2024 / 2025"); // Only older batches, NO 2026!
+
+        jobs.add(j2026);
+        jobs.add(jNo2026);
+
+        when(foundJobRepository.findAllByOrderByCreatedAtDesc()).thenReturn(jobs);
+
+        JobSearchResponseDto res = foundJobService.searchJobs(null, null, null, null, null, null, null, null);
+        assertEquals(1, res.getTotalFound(), "Must strictly exclude any job not permitting 2026 batch");
+        assertEquals("Swiggy", res.getJobs().get(0).getCompany());
+        assertTrue(res.getJobs().get(0).getBatchAllowed().contains("2026"));
     }
 }

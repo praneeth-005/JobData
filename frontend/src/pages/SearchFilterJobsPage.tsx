@@ -75,6 +75,14 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
         if (json && json.data && json.data.jobs) {
           let list = json.data.jobs as FoundJob[];
 
+          // Mandatory 2026 Batch Policy:
+          // Must show jobs for only 2026 passed or previous year passed out batches that also include 2026 batch.
+          // If 2026 batch is not included, do NOT show those jobs.
+          list = list.filter(j => j.batchAllowed && j.batchAllowed.includes('2026'));
+          if (selectedBatches.length > 0) {
+            list = list.filter(j => selectedBatches.some(b => j.batchAllowed && j.batchAllowed.includes(b)));
+          }
+
           // Multi-attribute client-side refinement
           if (selectedCompanies.length > 0) {
             list = list.filter(j => selectedCompanies.some(c => j.company.toLowerCase().includes(c.toLowerCase())));
@@ -115,7 +123,7 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         bondText: 'Zero Bond Guarantee',
         jobMatchScore: 94,
@@ -131,7 +139,7 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
       {
         id: 'job-swg',
         jobCode: 'SWG-2025-ASE',
-        title: 'Associate Software Engineer - 2025 Batch',
+        title: 'Associate Software Engineer - 2026 / 2025 Batch',
         company: 'Swiggy',
         location: 'Bengaluru • Hybrid',
         city: 'Bengaluru',
@@ -140,7 +148,7 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years (Fresher)',
         bondText: 'Zero Bond Guarantee',
         jobMatchScore: 88,
@@ -165,7 +173,7 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         bondText: 'Zero Bond Guarantee',
         jobMatchScore: 92,
@@ -190,7 +198,7 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         bondText: 'Zero Bond Guarantee',
         jobMatchScore: 90,
@@ -215,7 +223,7 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
         jobType: 'FULL_TIME',
         workMode: 'On-site',
         interviewMode: 'WALK_IN',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Entry-Level',
         bondText: 'Zero Bond Guarantee',
         jobMatchScore: 85,
@@ -240,7 +248,7 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         bondText: 'Zero Bond Guarantee',
         jobMatchScore: 93,
@@ -265,7 +273,7 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         bondText: 'Zero Bond Guarantee',
         jobMatchScore: 87,
@@ -290,7 +298,7 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
         jobType: 'FULL_TIME',
         workMode: 'Hybrid',
         interviewMode: 'VIRTUAL',
-        batchAllowed: '2024 / 2025',
+        batchAllowed: '2026 / 2025',
         experienceText: '0 Years / Fresher Scope',
         bondText: 'Zero Bond Guarantee',
         jobMatchScore: 91,
@@ -305,7 +313,11 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
       }
     ];
 
-    let filtered = defaultList;
+    // Mandatory 2026 Batch Policy:
+    let filtered = defaultList.filter(j => j.batchAllowed && j.batchAllowed.includes('2026'));
+    if (selectedBatches.length > 0) {
+      filtered = filtered.filter(j => selectedBatches.some(b => j.batchAllowed && j.batchAllowed.includes(b)));
+    }
     if (companyInput.trim()) {
       filtered = filtered.filter(j => j.company.toLowerCase().includes(companyInput.toLowerCase().trim()));
     }
@@ -721,17 +733,25 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
 
           {/* Dimension 3: Graduation Batch */}
           <div className="flex flex-col gap-2 pt-2 border-t border-[#f1f5f9]">
-            <span className="text-xs font-bold text-[#0f172a]">Target Batch</span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#0f172a]">Target Batch</span>
+              <span className="text-[10px] font-bold text-[#2563eb] bg-[#eff6ff] px-2 py-0.5 rounded-full border border-[#bfdbfe]">2026 Guaranteed</span>
+            </div>
+            <p className="text-[10.5px] text-[#64748b]">All jobs verified to include 2026 passout batch</p>
             <div className="flex flex-col gap-1.5 text-xs text-[#334155]">
-              {['2024', '2025', '2026'].map(b => (
-                <label key={b} className="flex items-center gap-2 cursor-pointer hover:text-[#0f172a]">
+              {[
+                { id: '2026', label: '2026 Passed Out (Mandatory Scope)' },
+                { id: '2025', label: '2025 & 2026 Joint Batches' },
+                { id: '2024', label: '2024, 2025 & 2026 Multi-Batch' },
+              ].map(item => (
+                <label key={item.id} className="flex items-center gap-2 cursor-pointer hover:text-[#0f172a]">
                   <input 
                     type="checkbox"
-                    checked={selectedBatches.includes(b)}
-                    onChange={() => toggleArrayItem(selectedBatches, setSelectedBatches, b)}
+                    checked={selectedBatches.includes(item.id)}
+                    onChange={() => toggleArrayItem(selectedBatches, setSelectedBatches, item.id)}
                     className="rounded text-[#4338ca] focus:ring-[#4338ca]"
                   />
-                  <span>Class of {b}</span>
+                  <span>{item.label}</span>
                 </label>
               ))}
             </div>

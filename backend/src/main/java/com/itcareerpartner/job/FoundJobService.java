@@ -49,7 +49,7 @@ public class FoundJobService {
                 tw.setFixedBase("Fixed Base: ₹8.00 LPA");
                 tw.setWorkMode("Hybrid");
                 tw.setInterviewMode("VIRTUAL");
-                tw.setBatchAllowed("2024 / 2025");
+                tw.setBatchAllowed("2026 / 2025");
                 tw.setRoleCategory("Full-Stack & Distributed Microservices");
                 tw.setSkills(List.of("Java 21", "Spring Boot", "PostgreSQL", "Clean Architecture", "Docker"));
                 tw.setJobMatchScore(94);
@@ -60,7 +60,7 @@ public class FoundJobService {
 
                 // 2. Swiggy
                 FoundJob swg = new FoundJob(
-                        "Associate Software Engineer - 2025 Batch",
+                        "Associate Software Engineer - 2026 / 2025 Batch",
                         "Swiggy",
                         "Bengaluru • Hybrid",
                         "Bengaluru",
@@ -79,7 +79,7 @@ public class FoundJobService {
                 swg.setFixedBase("Fixed Base: ₹5.50 LPA + ₹50K Retention");
                 swg.setWorkMode("Hybrid");
                 swg.setInterviewMode("VIRTUAL");
-                swg.setBatchAllowed("2024 / 2025");
+                swg.setBatchAllowed("2026 / 2025");
                 swg.setRoleCategory("Hyperlocal Logistics Logistics Engine");
                 swg.setSkills(List.of("Go / Golang", "Java", "Kafka", "Redis", "Distributed Systems"));
                 swg.setJobMatchScore(88);
@@ -109,7 +109,7 @@ public class FoundJobService {
                 rzp.setFixedBase("Fixed Base: ₹12.50 LPA");
                 rzp.setWorkMode("Hybrid");
                 rzp.setInterviewMode("VIRTUAL");
-                rzp.setBatchAllowed("2024 / 2025");
+                rzp.setBatchAllowed("2026 / 2025");
                 rzp.setRoleCategory("Core Payments Transaction Processing Engine");
                 rzp.setSkills(List.of("Go / Golang", "Java 17", "Distributed Systems", "Kafka", "MySQL"));
                 rzp.setJobMatchScore(92);
@@ -139,7 +139,7 @@ public class FoundJobService {
                 zoho.setFixedBase("Fixed Base: ₹5.20 LPA");
                 zoho.setWorkMode("On-site");
                 zoho.setInterviewMode("WALK_IN");
-                zoho.setBatchAllowed("2024 / 2025 / 2026");
+                zoho.setBatchAllowed("2026 / 2025 / 2024");
                 zoho.setRoleCategory("Cloud SaaS Product Engineering");
                 zoho.setSkills(List.of("Java", "JavaScript", "C++", "Data Structures", "PostgreSQL"));
                 zoho.setJobMatchScore(85);
@@ -169,7 +169,7 @@ public class FoundJobService {
                 pp.setFixedBase("Fixed Base: ₹12.00 LPA");
                 pp.setWorkMode("Hybrid");
                 pp.setInterviewMode("VIRTUAL");
-                pp.setBatchAllowed("2024 / 2025");
+                pp.setBatchAllowed("2026 / 2025");
                 pp.setRoleCategory("UPI Payments & Settlement Systems");
                 pp.setSkills(List.of("Java", "Spring Boot", "Kafka", "Aerospike", "HBase"));
                 pp.setJobMatchScore(91);
@@ -199,7 +199,7 @@ public class FoundJobService {
                 rak.setFixedBase("Fixed Base: ₹8.40 LPA");
                 rak.setWorkMode("Hybrid");
                 rak.setInterviewMode("VIRTUAL");
-                rak.setBatchAllowed("2024 / 2025");
+                rak.setBatchAllowed("2026 / 2025");
                 rak.setRoleCategory("Global E-Commerce Platform Services");
                 rak.setSkills(List.of("Java", "Spring Cloud", "React", "AWS", "Docker"));
                 rak.setJobMatchScore(90);
@@ -229,7 +229,7 @@ public class FoundJobService {
                 tcs.setFixedBase("Fixed Base: ₹7.00 LPA");
                 tcs.setWorkMode("Hybrid");
                 tcs.setInterviewMode("VIRTUAL");
-                tcs.setBatchAllowed("2024 / 2025");
+                tcs.setBatchAllowed("2026 / 2025 / 2024");
                 tcs.setRoleCategory("Enterprise Cloud & AI Solutions");
                 tcs.setSkills(List.of("Java", "Python", "Cloud Computing", "Spring Boot", "SQL"));
                 tcs.setJobMatchScore(87);
@@ -259,7 +259,7 @@ public class FoundJobService {
                 infy.setFixedBase("Fixed Base: ₹9.00 LPA");
                 infy.setWorkMode("Hybrid");
                 infy.setInterviewMode("VIRTUAL");
-                infy.setBatchAllowed("2024 / 2025");
+                infy.setBatchAllowed("2026 / 2025");
                 infy.setRoleCategory("High-End Complex Architecture & AI");
                 infy.setSkills(List.of("Java", "Algorithms", "Spring Boot", "Microservices", "PostgreSQL"));
                 infy.setJobMatchScore(93);
@@ -289,7 +289,7 @@ public class FoundJobService {
                 wip.setFixedBase("Fixed Base: ₹6.50 LPA");
                 wip.setWorkMode("Hybrid");
                 wip.setInterviewMode("VIRTUAL");
-                wip.setBatchAllowed("2024 / 2025");
+                wip.setBatchAllowed("2026 / 2025 / 2024");
                 wip.setRoleCategory("Cloud & Cybersecurity Engineering");
                 wip.setSkills(List.of("Java", "AWS", "Spring", "Linux", "REST APIs"));
                 wip.setJobMatchScore(84);
@@ -319,7 +319,7 @@ public class FoundJobService {
                 jus.setFixedBase("Fixed Base: ₹10.50 LPA");
                 jus.setWorkMode("Remote");
                 jus.setInterviewMode("VIRTUAL");
-                jus.setBatchAllowed("2024 / 2025");
+                jus.setBatchAllowed("2026 / 2025");
                 jus.setRoleCategory("High Concurrency Payment Engine");
                 jus.setSkills(List.of("Haskell", "PureScript", "Java", "PostgreSQL", "Distributed Systems"));
                 jus.setJobMatchScore(86);
@@ -349,7 +349,7 @@ public class FoundJobService {
                 cts.setFixedBase("Fixed Base: ₹6.75 LPA");
                 cts.setWorkMode("Hybrid");
                 cts.setInterviewMode("VIRTUAL");
-                cts.setBatchAllowed("2024 / 2025");
+                cts.setBatchAllowed("2026 / 2025 / 2024");
                 cts.setRoleCategory("Full Stack Modern Applications");
                 cts.setSkills(List.of("Java", "React", "Spring Boot", "Git", "SQL"));
                 cts.setJobMatchScore(89);
@@ -379,7 +379,7 @@ public class FoundJobService {
                 amz.setFixedBase("Fixed Base: ₹16.50 LPA + ₹4.5L Sign-on");
                 amz.setWorkMode("Hybrid");
                 amz.setInterviewMode("VIRTUAL");
-                amz.setBatchAllowed("2024 / 2025");
+                amz.setBatchAllowed("2026 / 2025");
                 amz.setRoleCategory("Distributed Systems & AWS Infrastructure");
                 amz.setSkills(List.of("Java", "Distributed Systems", "AWS", "Algorithms", "Object-Oriented Design"));
                 amz.setJobMatchScore(90);
@@ -451,6 +451,13 @@ public class FoundJobService {
                 if (!matchesCompany && !matchesTitle && !matchesLocation && !matchesSkills) {
                     return false;
                 }
+            }
+
+            // Mandatory 2026 Batch Policy:
+            // Must show jobs for only 2026 passed or previous year passed out batches that also include 2026 batch.
+            // If 2026 batch is not included, do NOT show those jobs.
+            if (job.getBatchAllowed() == null || !job.getBatchAllowed().contains("2026")) {
+                return false;
             }
 
             // Min CTC filter
@@ -580,7 +587,7 @@ public class FoundJobService {
         }
 
         FoundJob created = new FoundJob(
-                "Software Engineer (Fresher / 2025 Batch)",
+                "Software Engineer (2026 / 2025 Batch)",
                 cleanName,
                 "Bengaluru / Hyderabad • Hybrid",
                 "Bengaluru",
@@ -599,7 +606,7 @@ public class FoundJobService {
         created.setFixedBase(String.format("Fixed Base: ₹%.2f LPA", ctc * 0.9));
         created.setWorkMode("Hybrid");
         created.setInterviewMode("VIRTUAL");
-        created.setBatchAllowed("2024 / 2025");
+        created.setBatchAllowed("2026 / 2025");
         created.setRoleCategory("Software Engineering & Cloud Microservices");
         created.setSkills(List.of("Java", "Spring Boot", "React", "SQL", "Git", "Data Structures"));
         created.setJobMatchScore(90);
@@ -666,12 +673,19 @@ public class FoundJobService {
                 "Pass",
                 "Role identified as Software Development (" + (job.getRoleCategory() != null ? job.getRoleCategory() : "Backend & Microservices") + "). Disqualifies BPO, customer support, data entry, and telecalling tracks."
         ));
+        String batchAllowed = job.getBatchAllowed() != null ? job.getBatchAllowed() : "2026 / 2025";
+        boolean has2026 = batchAllowed.contains("2026");
         rules.add(new JobEligibilityDto.RuleEvaluation(
                 2,
-                "Fresher & Entry-Level Scope",
-                "Pass",
-                "Explicitly accepts 0 Years (Fresher) experience requirement. Specifically targets 2024 graduates and 2025 outgoing batch candidates."
+                "2026 Batch & Fresher Scope",
+                has2026 ? "Pass" : "Failed",
+                has2026 
+                        ? "Explicitly includes 2026 passed out batch (" + batchAllowed + "). Open to 2026 outgoing graduates and previous eligible batches with verified zero-experience fresher scope."
+                        : "Disqualified: Opportunity restricts candidates to older batches (" + batchAllowed + ") and fails to include the 2026 batch."
         ));
+        if (!has2026) {
+            dto.setEligible(false);
+        }
 
         double ctcVal = job.getCtcLpa() != null ? job.getCtcLpa() : 6.0;
         double diff = ctcVal - 2.4;
@@ -738,11 +752,7 @@ public class FoundJobService {
     }
 
     public FoundJobSummaryDto getFoundJobsSummary(String tab, String q, String location) {
-        List<FoundJob> all = foundJobRepository.findAllByOrderByCreatedAtDesc();
-        if (all.isEmpty()) {
-            initDefaultFoundJobs();
-            all = foundJobRepository.findAllByOrderByCreatedAtDesc();
-        }
+        List<FoundJob> all = getAllJobsSafe();
 
         List<FoundJob> filtered = all.stream().filter(job -> {
             if (tab != null && !tab.isEmpty()) {
