@@ -48,3 +48,21 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #777586;
 }
+
+/* Stitch Auth Utilities */
+.font-serif {
+  font-family: 'Newsreader', Georgia, serif;
+}
+.font-display-hero {
+  font-family: 'Newsreader', 'Playfair Display', Georgia, serif;
+}
+.perspective-1200 { perspective: 1200px; }
+.perspective-1400 { perspective: 1400px; }
+.preserve-3d { transform-style: preserve-3d; }
+.glass-card {
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 20px 40px -15px rgba(60, 40, 30, 0.05), 0 1px 2px 0 rgba(60, 40, 30, 0.02);
+}

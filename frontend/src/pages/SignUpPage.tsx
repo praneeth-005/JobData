@@ -7,46 +7,35 @@ interface SignUpPageProps {
 
 export default function SignUpPage({ onSignUpSuccess, onNavigateToSignIn }: SignUpPageProps) {
   const [fullName, setFullName] = useState('Arjun Rao');
-  const [email, setEmail] = useState('arjun.rao@college.edu');
-  const [graduationYear, setGraduationYear] = useState('2024 Batch');
-  const [degree, setDegree] = useState('B.Tech Computer Science');
-  const [targetTrack, setTargetTrack] = useState('Full Stack Engineering');
-  const [password, setPassword] = useState('Redbull@005');
-  const [confirmPassword, setConfirmPassword] = useState('Redbull@005');
+  const [email, setEmail] = useState('arjun@college.edu');
+  const [password, setPassword] = useState('Secret2025!');
+  const [confirmPassword, setConfirmPassword] = useState('Secret2025!');
   const [showPassword, setShowPassword] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(true);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeCharter, setAgreeCharter] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Password strength calculation
-  const calculatePasswordStrength = (pwd: string) => {
-    let score = 0;
-    if (pwd.length >= 8) score++;
-    if (/[A-Z]/.test(pwd)) score++;
-    if (/[0-9]/.test(pwd)) score++;
-    if (/[^A-Za-z0-9]/.test(pwd)) score++;
-    return score;
-  };
+  // Password criteria
+  const hasLen = password.length >= 8;
+  const hasNum = /\d/.test(password);
+  const hasUpper = /[A-Z]/.test(password);
 
-  const pwdScore = calculatePasswordStrength(password);
-  const passwordsMatch = password.length > 0 && password === confirmPassword;
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName.trim() || !email.trim()) {
-      setErrorMsg('Please enter your full name and email address.');
-      return;
-    }
-    if (password.length < 8) {
-      setErrorMsg('Password must be at least 8 characters long.');
-      return;
-    }
     if (password !== confirmPassword) {
-      setErrorMsg('Passwords do not match.');
+      setErrorMsg('Password and confirmation password do not match.');
       return;
     }
-    if (!agreeTerms) {
-      setErrorMsg('Please agree to the Zero Fake Experience & Anti-Bond Pledge.');
+    if (!hasLen || !hasNum || !hasUpper) {
+      setErrorMsg('Please fulfill password criteria (8+ chars, 1 number, 1 uppercase).');
+      return;
+    }
+    if (!agreeCharter) {
+      setErrorMsg('Please agree to the Candidate Non-Exploitation Charter.');
       return;
     }
 
@@ -55,423 +44,436 @@ export default function SignUpPage({ onSignUpSuccess, onNavigateToSignIn }: Sign
 
     setTimeout(() => {
       setIsLoading(false);
-      onSignUpSuccess({ name: fullName, email });
-    }, 700);
-  };
-
-  const handleSSO = (provider: 'Google' | 'GitHub') => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      onSignUpSuccess({
-        name: provider === 'Google' ? 'Arjun Rao' : 'Arjun Rao (GitHub)',
-        email: provider === 'Google' ? 'arjun.rao@gmail.com' : 'arjun-rao@users.noreply.github.com'
-      });
-    }, 700);
-  };
-
-  const handleQuickFill = () => {
-    setFullName('Sneha Patel');
-    setEmail('sneha.patel@nit.edu');
-    setGraduationYear('2025 Batch');
-    setDegree('B.Tech Electronics & Communication');
-    setTargetTrack('QA Automation');
-    setPassword('Redbull@005');
-    setConfirmPassword('Redbull@005');
-    setAgreeTerms(true);
-    setErrorMsg(null);
+      const name = fullName.trim() || 'Arjun Rao';
+      onSignUpSuccess({ name, email });
+    }, 750);
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF9F6] text-[#191512] font-sans flex flex-col justify-between selection:bg-[#9c3d0c]/15 selection:text-[#9c3d0c]">
+    <div className="min-h-screen bg-[#fcf8f5] text-stone-900 font-sans flex flex-col justify-between selection:bg-[#9c3d0c]/15 selection:text-[#9c3d0c]">
       
-      {/* Top Header */}
-      <header className="w-full bg-[#fbf7f4]/90 backdrop-blur-md border-b border-[#EDE6DE]/70 z-30 shrink-0">
-        <div className="h-16 max-w-7xl mx-auto px-6 sm:px-8 flex items-center justify-between">
+      {/* Header: Airy, ultra-clean top chrome */}
+      <header className="w-full bg-[#fbf7f4]/80 backdrop-blur-md border-b border-stone-200/50 z-30 shrink-0">
+        <div className="h-16 max-w-[1440px] mx-auto px-6 sm:px-10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#9c3d0c] text-white flex items-center justify-center font-bold text-xs tracking-tight shadow-xs">
+            <div className="w-7 h-7 rounded-md bg-[#9c3d0c] text-white flex items-center justify-center font-display-hero text-xs font-semibold tracking-wider shadow-xs">
               IT
             </div>
-            <span className="font-bold text-base tracking-tight text-[#191512]">
-              IT Career Partner
-            </span>
-            <span className="hidden sm:inline-block text-[11px] font-mono tracking-wide text-[#78716c] px-2 py-0.5 rounded-full border border-[#EDE6DE] bg-white/70">
-              FRESHER REGISTER
+            <span className="font-display-hero text-[17px] text-stone-900 tracking-tight font-medium">
+              IT Career
             </span>
           </div>
-
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#EDE6DE] text-[11px] font-mono text-[#57534e] shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
-            <span>256-Bit Encrypted Session</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100/80 border border-stone-200/60 text-stone-600 text-[11px] tracking-wide">
+            <span className="material-symbols-outlined text-[13px] text-emerald-600">lock</span>
+            <span className="uppercase tracking-widest font-medium">256-Bit Encrypted Session</span>
           </div>
         </div>
       </header>
 
-      {/* Main Form Content */}
-      <main className="w-full flex-1 flex flex-col items-center justify-center py-6 sm:py-10">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-8">
-          <div className="w-full grid grid-cols-1 lg:grid-cols-12 rounded-3xl overflow-hidden border border-[#EDE6DE] shadow-xl bg-white">
+      {/* Main Viewport Layout */}
+      <main className="w-full flex-1 flex flex-col items-center justify-center">
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-6 lg:py-12 flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+          
+          {/* Left Panel: Elevated Architectural 3D Composition (~54%) */}
+          <div className="w-full lg:w-[54%] flex flex-col justify-between relative">
             
-            {/* Left Column (~52% = 6 cols on lg): Hero & Guarantees */}
-            <div className="lg:col-span-6 p-8 sm:p-12 lg:p-14 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#EDE6DE]/70 bg-gradient-to-br from-[#FDFBF7] via-[#F8F4EE] to-[#F3EDE3] relative overflow-hidden">
-              
-              {/* Subtle ambient light */}
-              <div className="absolute top-10 right-10 w-72 h-72 rounded-full bg-[#9c3d0c]/5 blur-3xl pointer-events-none"></div>
+            {/* Ambient radial lighting aura */}
+            <div className="absolute -top-20 -left-20 w-80 h-80 bg-orange-200/25 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-4 right-10 w-72 h-72 bg-emerald-100/35 rounded-full blur-3xl pointer-events-none"></div>
 
-              <div className="relative z-10 flex flex-col gap-3">
-                <span className="font-mono text-[11px] tracking-wider uppercase text-[#9c3d0c] font-bold">
-                  STUDENT &amp; FRESHER EXCLUSIVE
+            {/* Typography Narrative */}
+            <div className="relative z-10 flex flex-col gap-3 max-w-xl">
+              <div className="inline-flex items-center gap-2 self-start px-2.5 py-0.5 rounded-full bg-white/70 border border-stone-200/60 text-stone-600 text-[11px] tracking-wider uppercase backdrop-blur-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#9c3d0c] animate-pulse"></span>
+                <span className="font-medium text-stone-700">Career Acceleration Engine • 0 Yrs Exp</span>
+              </div>
+              <h1 className="font-display-hero text-4xl sm:text-5xl lg:text-[54px] font-normal tracking-tight text-stone-900 leading-[1.12]">
+                Your next chapter<br />
+                <span className="italic font-light text-stone-800">starts here.</span>
+              </h1>
+              <p className="text-stone-500 font-light text-[15px] sm:text-base leading-relaxed max-w-lg mt-1">
+                Build a clearer path to your first IT role. Audited opportunities, zero ghost jobs, direct campus-to-tier-1 placement mechanics.
+              </p>
+            </div>
+
+            {/* 3D Perspective Floating Composition Area */}
+            <div className="relative z-10 my-10 w-full flex items-center justify-center [perspective:1400px]">
+              <div className="relative w-full max-w-[480px] h-[340px]">
+                
+                {/* Floating Dimensional Layer: Translucent back plate */}
+                <div 
+                  className="absolute inset-x-8 top-12 bottom-6 rounded-2xl bg-gradient-to-tr from-stone-200/20 to-amber-100/10 border border-stone-200/40 backdrop-blur-[2px] pointer-events-none"
+                  style={{ transform: 'rotateY(-6deg) rotateX(4deg) translateZ(-30px)' }}
+                ></div>
+
+                {/* Card 1: Resume Blueprint (Angled left card) */}
+                <div 
+                  className="absolute top-4 left-0 sm:left-2 w-[290px] sm:w-[310px] bg-white/95 rounded-2xl p-5 border border-stone-200/70 shadow-[0_16px_36px_-12px_rgba(28,25,23,0.06),0_2px_6px_rgba(28,25,23,0.02)] transition-transform duration-500 hover:scale-[1.02] z-20"
+                  style={{ transform: 'rotateY(-7deg) rotateX(5deg) translateZ(10px)' }}
+                >
+                  <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-[#9c3d0c] font-sans text-xs font-semibold">
+                        AR
+                      </div>
+                      <div>
+                        <div className="font-sans text-[13px] font-semibold text-stone-900 tracking-tight">Arjun Rao</div>
+                        <div className="font-sans text-[11px] text-stone-400 font-normal">B.Tech CSE • Class of 2025</div>
+                      </div>
+                    </div>
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100 text-[11px] font-medium">
+                      <span className="material-symbols-outlined text-[12px] text-emerald-600">check_circle</span>
+                      <span>94% Match</span>
+                    </div>
+                  </div>
+                  <div className="mt-3.5 flex flex-wrap gap-1.5">
+                    <span className="px-2 py-0.5 rounded-md bg-stone-50 border border-stone-100 text-stone-600 font-sans text-[11px]">Spring Boot 3</span>
+                    <span className="px-2 py-0.5 rounded-md bg-stone-50 border border-stone-100 text-stone-600 font-sans text-[11px]">React 18</span>
+                    <span className="px-2 py-0.5 rounded-md bg-stone-50 border border-stone-100 text-stone-600 font-sans text-[11px]">PostgreSQL</span>
+                    <span className="px-2 py-0.5 rounded-md bg-stone-50 border border-stone-100 text-stone-600 font-sans text-[11px]">Microservices</span>
+                  </div>
+                  <div className="mt-4 pt-2.5 flex items-center justify-between text-[11px] text-stone-400">
+                    <span className="flex items-center gap-1 font-mono">
+                      <span className="material-symbols-outlined text-[13px] text-[#9c3d0c]">verified</span>
+                      IND-BLR-8921
+                    </span>
+                    <span className="text-emerald-700 font-medium">Ready for Dispatch</span>
+                  </div>
+                </div>
+
+                {/* Card 2: ATS Circular Telemetry Ring */}
+                <div 
+                  className="absolute -top-1 right-2 sm:right-6 bg-white/95 rounded-2xl p-3 border border-stone-200/70 shadow-[0_12px_28px_-8px_rgba(28,25,23,0.08)] z-30 flex items-center gap-3"
+                  style={{ transform: 'translateZ(42px)' }}
+                >
+                  <div className="relative w-11 h-11 flex items-center justify-center">
+                    <svg className="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
+                      <circle className="text-stone-100" cx="18" cy="18" fill="none" r="15.5" stroke="currentColor" strokeWidth="2.5"></circle>
+                      <circle 
+                        className="text-[#9c3d0c]" 
+                        cx="18" cy="18" fill="none" r="15.5" 
+                        stroke="currentColor" 
+                        strokeDasharray="88, 100" 
+                        strokeLinecap="round" 
+                        strokeWidth="2.5"
+                      ></circle>
+                    </svg>
+                    <span className="absolute font-sans text-xs font-semibold text-stone-800">88%</span>
+                  </div>
+                  <div className="pr-1.5">
+                    <div className="font-sans text-[12px] font-semibold text-stone-900 leading-tight">ATS Telemetry</div>
+                    <div className="font-sans text-[10px] text-stone-400 leading-tight">Alignment Score</div>
+                  </div>
+                </div>
+
+                {/* Card 3: Verified Opportunity Card (Right bottom angled) */}
+                <div 
+                  className="absolute bottom-2 right-0 sm:right-2 w-[295px] sm:w-[325px] bg-white rounded-2xl p-5 border border-stone-200/70 shadow-[0_20px_40px_-14px_rgba(28,25,23,0.1),0_2px_8px_rgba(28,25,23,0.03)] transition-transform duration-500 hover:scale-[1.02] z-25"
+                  style={{ transform: 'rotateY(5deg) rotateX(-3deg) translateZ(26px)' }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="inline-block px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200/50 text-[10px] font-semibold tracking-wider uppercase">
+                        Direct ATS Intake
+                      </span>
+                      <div className="font-sans text-[13px] font-semibold text-stone-900 mt-1.5">
+                        Associate Software Engineer
+                      </div>
+                      <div className="font-sans text-xs text-[#9c3d0c] font-medium mt-0.5">
+                        ₹8.5 LPA Verified CTC
+                      </div>
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-500">
+                      <span className="material-symbols-outlined text-[15px]">domain</span>
+                    </div>
+                  </div>
+                  <div className="mt-3.5 flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-50 text-stone-600 border border-stone-100 text-[11px]">
+                      <span className="material-symbols-outlined text-[12px] text-emerald-600">check</span>
+                      0 Yrs Exp Req.
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100 text-[11px] font-medium">
+                      <span className="material-symbols-outlined text-[12px] text-emerald-600">security</span>
+                      Zero-Bond
+                    </span>
+                  </div>
+                  <div className="mt-3.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      Workday Handshake
+                    </span>
+                    <span>Bengaluru / Hybrid</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-[10px] text-stone-400">
+                    <span className="flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[12px] text-emerald-600">lock</span>
+                      ISO 27001 Protected Data
+                    </span>
+                    <span className="text-amber-800 font-medium">Walk-in Radar Active</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Bottom Meta & Social Proof */}
+            <div className="relative z-10 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-stone-400 border-t border-stone-200/50">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px] text-[#9c3d0c]">bolt</span>
+                <span>
+                  <strong className="text-stone-700 font-semibold">18,400+</strong> Fresher openings audited &amp; verified without false claims
                 </span>
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#191512] leading-[1.15]">
-                  Designed exclusively for <span className="text-[#9c3d0c]">2024, 2025 &amp; 2026</span> Indian IT freshers.
-                </h1>
-                <p className="text-sm text-[#78716c] leading-relaxed mt-1">
-                  Zero spam. Zero customer support or telecalling roles. We audit every posting down to contract terms, bond clauses, and real market pay.
+              </div>
+              <div className="flex items-center gap-1.5 font-mono text-[11px] text-stone-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                <span>Zero Non-Disclosure Exploitation</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Right Panel: Elevated Minimalist Card (~46%) */}
+          <div className="w-full lg:w-[46%] max-w-[460px]">
+            <div className="bg-white rounded-3xl p-7 sm:p-9 border border-stone-200/70 shadow-[0_20px_50px_-15px_rgba(28,25,23,0.06),0_1px_3px_rgba(28,25,23,0.02)]">
+              
+              {/* Form Card Header */}
+              <div className="space-y-1.5 mb-6">
+                <h2 className="font-display-hero text-2xl font-normal text-stone-900 tracking-tight">
+                  Create your account
+                </h2>
+                <p className="text-stone-500 font-light text-xs sm:text-[13px] leading-relaxed">
+                  Takes less than 60 seconds to get your personalized fresher radar and direct ATS match telemetry.
                 </p>
               </div>
 
-              {/* 3 Value Proposition Cards */}
-              <div className="relative z-10 my-8 space-y-3.5">
-                
-                <div className="p-4 rounded-2xl bg-white/80 backdrop-blur-xs border border-white/90 shadow-xs flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#10b981]/15 text-[#047857] flex items-center justify-center font-bold text-base shrink-0 mt-0.5">
-                    🎯
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#191512]">0 Years Experience Locked</div>
-                    <div className="text-[11.5px] text-[#78716c] mt-0.5 leading-snug">
-                      No postings asking for 2-3 years will ever show up in your radar.
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white/80 backdrop-blur-xs border border-white/90 shadow-xs flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#0284c7]/15 text-[#0284c7] flex items-center justify-center font-bold text-base shrink-0 mt-0.5">
-                    💵
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#191512]">Verified CTC Floor ≥ ₹2.4 LPA</div>
-                    <div className="text-[11.5px] text-[#78716c] mt-0.5 leading-snug">
-                      Paid internships (&gt; ₹5k WFH, &gt; ₹10k WFO) and full-time packages verified against exploitation.
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white/80 backdrop-blur-xs border border-white/90 shadow-xs flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#9c3d0c]/15 text-[#9c3d0c] flex items-center justify-center font-bold text-base shrink-0 mt-0.5">
-                    🛡️
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#191512]">Zero Bond Guarantee</div>
-                    <div className="text-[11.5px] text-[#78716c] mt-0.5 leading-snug">
-                      100% verified against service bonds, certificate surrender, or upfront training fee scams.
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Live Telemetry Pill */}
-              <div className="relative z-10 flex items-center justify-between text-xs text-[#78716c] pt-2 border-t border-[#EDE6DE]/70">
-                <span className="font-mono text-[11px] text-[#635b53]">
-                  ⚡ 1,420 Active Roles • 89 Companies Hiring
-                </span>
-                <span className="text-[11px] font-bold text-[#047857]">
-                  0 Scams Allowed
-                </span>
-              </div>
-
-            </div>
-
-            {/* Right Column (~48% = 6 cols on lg): Registration Form */}
-            <div className="lg:col-span-6 p-8 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
-              
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h2 className="text-2xl font-bold tracking-tight text-[#191512]">
-                    Create your account
-                  </h2>
-                  <p className="text-xs text-[#78716c] mt-0.5">
-                    Setup your fresher profile in 30 seconds.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleQuickFill}
-                  className="px-2.5 py-1 rounded-lg bg-[#FAF8F5] hover:bg-[#f3ede3] border border-[#EDE6DE] text-[10.5px] font-mono font-semibold text-[#9c3d0c] transition-colors"
-                >
-                  ⚡ Quick-Fill
-                </button>
-              </div>
-
-              {/* SSO Buttons */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <button
-                  type="button"
-                  onClick={() => handleSSO('Google')}
-                  className="h-10 px-3 rounded-xl border border-[#EDE6DE] hover:border-[#cbd5e1] hover:bg-[#FAF8F5] transition-all flex items-center justify-center gap-2 text-xs font-semibold text-[#191512] shadow-2xs"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                  </svg>
-                  <span>Google</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleSSO('GitHub')}
-                  className="h-10 px-3 rounded-xl border border-[#EDE6DE] hover:border-[#cbd5e1] hover:bg-[#FAF8F5] transition-all flex items-center justify-center gap-2 text-xs font-semibold text-[#191512] shadow-2xs"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-                  </svg>
-                  <span>GitHub</span>
-                </button>
-              </div>
-
-              {/* Divider */}
-              <div className="relative flex items-center justify-center my-3">
-                <div className="border-t border-[#EDE6DE] w-full"></div>
-                <span className="bg-white px-3 text-[10.5px] font-mono text-[#94a3b8] uppercase tracking-wider whitespace-nowrap">
-                  or register with email
-                </span>
-                <div className="border-t border-[#EDE6DE] w-full"></div>
-              </div>
-
-              {/* Error Message */}
+              {/* Error Callout */}
               {errorMsg && (
-                <div className="mb-3.5 p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
-                  <span>⚠️</span>
+                <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200/60 text-xs text-red-800 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px] text-red-600">error</span>
                   <span>{errorMsg}</span>
                 </div>
               )}
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-3.5">
+              {/* Form Fields */}
+              <form onSubmit={handleSubmit} className="space-y-4">
                 
-                {/* Full Name & Email */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#191512] mb-1">
-                      Full Name
+                {/* Field 1: Full Name */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-stone-600 font-medium" htmlFor="fullName">
+                      Full name <span className="text-stone-400 font-normal">(Optional)</span>
                     </label>
-                    <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g. Arjun Rao"
-                      required
-                      className="w-full h-10 px-3 rounded-xl bg-[#FAF8F5] focus:bg-white text-xs text-[#191512] placeholder:text-[#94a3b8] border border-[#EDE6DE] focus:border-[#9c3d0c] focus:ring-1 focus:ring-[#9c3d0c]/20 outline-none transition-all"
-                    />
+                    <span className="text-[11px] text-stone-400 font-light">Profile Display</span>
                   </div>
+                  <input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Arjun Rao"
+                    className="w-full h-11 px-3.5 rounded-xl bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-stone-900 placeholder:text-stone-400 text-sm border border-stone-200/70 focus:border-[#9c3d0c] focus:ring-1 focus:ring-[#9c3d0c]/30 focus:outline-none transition-all duration-150"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-[#191512] mb-1">
-                      Email Address
+                {/* Field 2: Work / Academic Email */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-stone-600 font-medium" htmlFor="email">
+                      Work / Academic Email <span className="text-[#9c3d0c]">*</span>
                     </label>
+                    <span className="text-[11px] text-emerald-700 font-medium flex items-center gap-0.5">
+                      Verified Direct Routing
+                    </span>
+                  </div>
+                  <div className="relative">
                     <input
+                      id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="arjun@college.edu"
+                      placeholder="arjun@college.edu or personal email"
                       required
-                      className="w-full h-10 px-3 rounded-xl bg-[#FAF8F5] focus:bg-white text-xs text-[#191512] placeholder:text-[#94a3b8] border border-[#EDE6DE] focus:border-[#9c3d0c] focus:ring-1 focus:ring-[#9c3d0c]/20 outline-none transition-all"
+                      className="w-full h-11 px-3.5 rounded-xl bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-stone-900 placeholder:text-stone-400 text-sm border border-stone-200/70 focus:border-[#9c3d0c] focus:ring-1 focus:ring-[#9c3d0c]/30 focus:outline-none transition-all duration-150"
                     />
-                  </div>
-                </div>
-
-                {/* Batch & Degree */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#191512] mb-1">
-                      Graduation Batch
-                    </label>
-                    <select
-                      value={graduationYear}
-                      onChange={(e) => setGraduationYear(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl bg-[#FAF8F5] focus:bg-white text-xs text-[#191512] border border-[#EDE6DE] focus:border-[#9c3d0c] outline-none"
-                    >
-                      <option>2024 Batch</option>
-                      <option>2025 Batch</option>
-                      <option>2026 Batch</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-[#191512] mb-1">
-                      Degree / Stream
-                    </label>
-                    <select
-                      value={degree}
-                      onChange={(e) => setDegree(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl bg-[#FAF8F5] focus:bg-white text-xs text-[#191512] border border-[#EDE6DE] focus:border-[#9c3d0c] outline-none"
-                    >
-                      <option>B.Tech Computer Science</option>
-                      <option>B.Tech Information Tech</option>
-                      <option>B.Tech ECE / Electronics</option>
-                      <option>MCA / BCA</option>
-                      <option>B.Sc Computer Science</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Target Role Track */}
-                <div>
-                  <label className="block text-xs font-semibold text-[#191512] mb-1.5">
-                    Target Primary Track
-                  </label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      'Full Stack Engineering',
-                      'Backend / Cloud',
-                      'QA Automation',
-                      'Frontend',
-                      'Data & AI'
-                    ].map((track) => (
-                      <button
-                        type="button"
-                        key={track}
-                        onClick={() => setTargetTrack(track)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                          targetTrack === track
-                            ? 'bg-[#9c3d0c] text-white shadow-2xs font-semibold'
-                            : 'bg-[#FAF8F5] text-[#635b53] border border-[#EDE6DE] hover:bg-[#f3ede3]'
-                        }`}
-                      >
-                        {track}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Password & Confirm Password */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-semibold text-[#191512]">
-                        Password
-                      </label>
-                      <span className={`text-[10px] font-mono font-bold ${
-                        pwdScore >= 3 ? 'text-[#047857]' : pwdScore === 2 ? 'text-amber-600' : 'text-red-500'
-                      }`}>
-                        {pwdScore >= 3 ? 'Strong' : pwdScore === 2 ? 'Medium' : 'Weak'}
+                    {isEmailValid && (
+                      <span className="absolute right-3 top-3 text-emerald-600 material-symbols-outlined text-[18px]">
+                        check_circle
                       </span>
-                    </div>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        required
-                        className="w-full h-10 px-3 pr-8 rounded-xl bg-[#FAF8F5] focus:bg-white text-xs text-[#191512] border border-[#EDE6DE] focus:border-[#9c3d0c] outline-none font-mono"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#78716c] hover:text-[#191512] text-xs p-1"
-                      >
-                        {showPassword ? '👁️' : '👁️‍🗨️'}
-                      </button>
-                    </div>
+                    )}
                   </div>
+                </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-semibold text-[#191512]">
-                        Confirm Password
-                      </label>
-                      {passwordsMatch && (
-                        <span className="text-[10px] font-mono text-[#047857] font-bold">
-                          ✓ Matches
-                        </span>
-                      )}
-                    </div>
+                {/* Field 3: Password */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-stone-600 font-medium" htmlFor="password">
+                      Password <span className="text-[#9c3d0c]">*</span>
+                    </label>
+                    <span className="text-[11px] text-stone-400 font-light">Min. 8 characters</span>
+                  </div>
+                  <div className="relative">
                     <input
+                      id="password"
                       type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      required
+                      className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-stone-900 placeholder:text-stone-400 text-sm border border-stone-200/70 focus:border-[#9c3d0c] focus:ring-1 focus:ring-[#9c3d0c]/30 focus:outline-none transition-all duration-150 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label="Toggle password visibility"
+                      className="absolute right-2.5 top-2.5 p-1 rounded-lg text-stone-400 hover:text-stone-600 focus:outline-none"
+                    >
+                      <span className="material-symbols-outlined text-[17px]">
+                        {showPassword ? 'visibility_off' : 'visibility'}
+                      </span>
+                    </button>
+                  </div>
+                  
+                  {/* Micro criteria chips */}
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${
+                      hasLen ? 'bg-emerald-50 text-emerald-800 border border-emerald-100' : 'bg-stone-100 text-stone-500'
+                    }`}>
+                      <span className="material-symbols-outlined text-[11px]">{hasLen ? 'check' : 'radio_button_unchecked'}</span>
+                      <span>8+ chars</span>
+                    </span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${
+                      hasNum ? 'bg-emerald-50 text-emerald-800 border border-emerald-100' : 'bg-stone-100 text-stone-500'
+                    }`}>
+                      <span className="material-symbols-outlined text-[11px]">{hasNum ? 'check' : 'radio_button_unchecked'}</span>
+                      <span>1 number</span>
+                    </span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${
+                      hasUpper ? 'bg-emerald-50 text-emerald-800 border border-emerald-100' : 'bg-stone-100 text-stone-500'
+                    }`}>
+                      <span className="material-symbols-outlined text-[11px]">{hasUpper ? 'check' : 'radio_button_unchecked'}</span>
+                      <span>1 uppercase</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Field 4: Confirm Password */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-stone-600 font-medium" htmlFor="confirmPassword">
+                      Confirm Password <span className="text-[#9c3d0c]">*</span>
+                    </label>
+                    <span className={`text-[11px] ${
+                      passwordsMatch ? 'text-emerald-700 font-medium' : confirmPassword.length > 0 ? 'text-red-600 font-medium' : 'text-stone-400 font-light'
+                    }`}>
+                      {passwordsMatch ? '✓ Passwords match' : confirmPassword.length > 0 ? 'Does not match' : 'Must match'}
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••••••"
                       required
-                      className={`w-full h-10 px-3 rounded-xl bg-[#FAF8F5] focus:bg-white text-xs text-[#191512] border outline-none font-mono ${
-                        confirmPassword.length > 0 && !passwordsMatch
-                          ? 'border-red-300 focus:border-red-500'
-                          : 'border-[#EDE6DE] focus:border-[#9c3d0c]'
-                      }`}
+                      className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-stone-900 placeholder:text-stone-400 text-sm border border-stone-200/70 focus:border-[#9c3d0c] focus:ring-1 focus:ring-[#9c3d0c]/30 focus:outline-none transition-all duration-150 font-mono"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label="Toggle confirm password visibility"
+                      className="absolute right-2.5 top-2.5 p-1 rounded-lg text-stone-400 hover:text-stone-600 focus:outline-none"
+                    >
+                      <span className="material-symbols-outlined text-[17px]">
+                        {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                      </span>
+                    </button>
                   </div>
                 </div>
 
-                {/* Password Strength Indicator Bars */}
-                <div className="grid grid-cols-4 gap-1.5 pt-0.5">
-                  <div className={`h-1 rounded-full ${pwdScore >= 1 ? 'bg-red-500' : 'bg-stone-200'}`}></div>
-                  <div className={`h-1 rounded-full ${pwdScore >= 2 ? 'bg-amber-500' : 'bg-stone-200'}`}></div>
-                  <div className={`h-1 rounded-full ${pwdScore >= 3 ? 'bg-emerald-500' : 'bg-stone-200'}`}></div>
-                  <div className={`h-1 rounded-full ${pwdScore >= 4 ? 'bg-emerald-600' : 'bg-stone-200'}`}></div>
-                </div>
-
-                {/* Anti-Exploitation Pledge Checkbox */}
-                <div className="pt-1.5">
-                  <label className="flex items-start gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={agreeTerms}
-                      onChange={(e) => setAgreeTerms(e.target.checked)}
-                      className="w-4 h-4 rounded border-[#EDE6DE] text-[#9c3d0c] focus:ring-[#9c3d0c] mt-0.5"
-                    />
-                    <span className="text-[11.5px] text-[#635b53] leading-snug">
-                      I confirm genuine graduation credentials and agree to the <strong className="text-[#191512]">Zero Fake Experience &amp; Anti-Bond Pledge</strong>.
+                {/* Field 5: Charter Agreement Microcopy */}
+                <div className="pt-1">
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <div className="relative flex items-center pt-0.5">
+                      <input
+                        id="charterAgree"
+                        type="checkbox"
+                        checked={agreeCharter}
+                        onChange={(e) => setAgreeCharter(e.target.checked)}
+                        required
+                        className="peer sr-only"
+                      />
+                      <div className="w-4 h-4 rounded-md border border-stone-300 bg-stone-50 peer-checked:bg-[#9c3d0c] peer-checked:border-[#9c3d0c] flex items-center justify-center transition-all">
+                        <svg className="w-2.5 h-2.5 text-white hidden peer-checked:block" fill="currentColor" viewBox="0 0 20 20">
+                          <path clipRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fillRule="evenodd"></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <span className="text-xs text-stone-500 font-light leading-relaxed select-none">
+                      I agree to the <a className="text-stone-800 underline underline-offset-2 hover:text-[#9c3d0c] transition-colors" href="#">Terms</a>, <a className="text-stone-800 underline underline-offset-2 hover:text-[#9c3d0c] transition-colors" href="#">Privacy Policy</a>, and the <span className="text-stone-800 font-medium">Candidate Non-Exploitation Charter</span>.
                     </span>
                   </label>
                 </div>
 
-                {/* Primary CTA */}
+                {/* Submit Button: Crisp Terracotta */}
                 <button
+                  id="submitBtn"
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-11 rounded-xl bg-[#9c3d0c] hover:bg-[#853309] text-white font-semibold text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-70 mt-2"
+                  className="w-full h-11 mt-1 rounded-xl bg-[#9c3d0c] hover:bg-[#853309] text-white text-sm font-medium tracking-wide flex items-center justify-center gap-2 shadow-xs hover:shadow-md transition-all duration-200 active:scale-[0.99] disabled:opacity-75"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Creating verified profile...</span>
+                      <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
+                      <span>Initializing Fresher Radar...</span>
                     </div>
                   ) : (
                     <>
-                      <span>Create Fresher Account</span>
-                      <span className="text-base">→</span>
+                      <span>Create account</span>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                     </>
                   )}
                 </button>
-              </form>
 
-              {/* Sign In Link */}
-              <div className="mt-4 text-center">
-                <p className="text-xs text-[#635b53]">
+                {/* Bottom Sign-in Link */}
+                <div className="text-center text-xs text-stone-400 font-light pt-1">
                   Already have an account?{' '}
                   <button
                     type="button"
                     onClick={onNavigateToSignIn}
-                    className="font-bold text-[#9c3d0c] hover:underline"
+                    className="text-[#9c3d0c] font-medium hover:text-[#7d2f07] transition-colors ml-1 inline-flex items-center gap-0.5"
                   >
-                    Sign in to your console
+                    <span>Sign in</span>
+                    <span className="material-symbols-outlined text-[13px]">arrow_outward</span>
                   </button>
-                </p>
-              </div>
+                </div>
+
+                {/* Footer Reassurance Note */}
+                <div className="pt-2 border-t border-stone-100 flex items-center justify-center gap-1.5 text-stone-400 text-[11px]">
+                  <span className="material-symbols-outlined text-[13px] text-emerald-600">lock</span>
+                  <span>256-bit encrypted • We never sell fresher contact data</span>
+                </div>
+
+              </form>
 
             </div>
-
           </div>
+
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-[#EDE6DE]/70 py-4 bg-white/50 text-center">
-        <div className="text-[11px] font-mono text-[#78716c]">
-          IT Career Partner • Ultra-Premium Engineering Console • India Sector
+      {/* Global Footer */}
+      <footer className="w-full border-t border-stone-200/50 py-5 shrink-0 bg-[#fbf7f4]/80">
+        <div className="max-w-[1440px] mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-400 font-light">
+          <div>© 2025 IT Career. Editorial Advisory &amp; Engineering Progression. All rights reserved.</div>
+          <div className="flex items-center gap-6">
+            <a className="hover:text-stone-700 transition-colors" href="#">Privacy Policy</a>
+            <a className="hover:text-stone-700 transition-colors" href="#">Terms of Engagement</a>
+            <div className="flex items-center gap-1 text-stone-500">
+              <span className="material-symbols-outlined text-[13px] text-emerald-600">verified_user</span>
+              <span>ISO/IEC 27001 Certified</span>
+            </div>
+          </div>
         </div>
       </footer>
 
