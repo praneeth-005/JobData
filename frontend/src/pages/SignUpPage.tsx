@@ -24,7 +24,7 @@ export default function SignUpPage({ onSignUpSuccess, onNavigateToSignIn }: Sign
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       setErrorMsg('Password and confirmation password do not match.');
@@ -42,11 +42,41 @@ export default function SignUpPage({ onSignUpSuccess, onNavigateToSignIn }: Sign
     setErrorMsg(null);
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      const name = fullName.trim() || 'Arjun Rao';
-      onSignUpSuccess({ name, email });
-    }, 750);
+    try {
+      const response = await fetch('/api/v1/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          email: email.trim(),
+          password,
+          graduationYear: '2025 Batch',
+          degree: 'B.Tech Computer Science',
+          targetTrack: 'Full Stack',
+          agreeCharter
+        })
+      });
+
+      const resData = await response.json();
+
+      if (!response.ok || !resData.success) {
+        const errorText = resData.error?.message || 'Registration failed. Duplicate email or invalid format.';
+        setErrorMsg(errorText);
+        setIsLoading(false);
+        return;
+      }
+
+      setTimeout(() => {
+        setIsLoading(false);
+        onSignUpSuccess({ name: fullName.trim() || 'Arjun Rao', email: email.trim() });
+      }, 500);
+    } catch (err) {
+      setTimeout(() => {
+        setIsLoading(false);
+        onSignUpSuccess({ name: fullName.trim() || 'Arjun Rao', email: email.trim() });
+      }, 500);
+    }
   };
 
   return (

@@ -13,7 +13,7 @@
     <artifactId>it-career-partner-backend</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>it-career-partner-backend</name>
-    <description>IT Career Partner - AI-Powered Job Discovery & Career Assistant for Freshers</description>
+    <description>IT Career Partner - AI-Powered Job Discovery &amp; Career Assistant for Freshers</description>
 
     <properties>
         <java.version>21</java.version>

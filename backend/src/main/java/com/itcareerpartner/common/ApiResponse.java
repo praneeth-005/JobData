@@ -1,43 +1,97 @@
 package com.itcareerpartner.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.Instant;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ApiResponse<T> {
     private boolean success;
     private T data;
     private ApiError error;
     private long timestamp;
 
+    public ApiResponse() {
+        this.timestamp = Instant.now().toEpochMilli();
+    }
+
+    public ApiResponse(boolean success, T data, ApiError error, long timestamp) {
+        this.success = success;
+        this.data = data;
+        this.error = error;
+        this.timestamp = timestamp;
+    }
+
     public static <T> ApiResponse<T> ok(T data) {
-        return ApiResponse.<T>builder()
-                .success(true)
-                .data(data)
-                .timestamp(Instant.now().toEpochMilli())
-                .build();
+        ApiResponse<T> resp = new ApiResponse<>();
+        resp.setSuccess(true);
+        resp.setData(data);
+        resp.setTimestamp(Instant.now().toEpochMilli());
+        return resp;
     }
 
     public static <T> ApiResponse<T> error(String code, String message) {
-        return ApiResponse.<T>builder()
-                .success(false)
-                .error(new ApiError(code, message))
-                .timestamp(Instant.now().toEpochMilli())
-                .build();
+        ApiResponse<T> resp = new ApiResponse<>();
+        resp.setSuccess(false);
+        resp.setError(new ApiError(code, message));
+        resp.setTimestamp(Instant.now().toEpochMilli());
+        return resp;
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    public ApiError getError() {
+        return error;
+    }
+
+    public void setError(ApiError error) {
+        this.error = error;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public static class ApiError {
         private String code;
         private String message;
+
+        public ApiError() {}
+
+        public ApiError(String code, String message) {
+            this.code = code;
+            this.message = message;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 }
