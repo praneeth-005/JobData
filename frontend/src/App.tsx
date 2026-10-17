@@ -1,19 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardPage from './pages/DashboardPage';
 import FindJobsPage from './pages/FindJobsPage';
 import JobDetailsPage from './pages/JobDetailsPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
+import ProfileOverviewPage from './pages/ProfileOverviewPage';
+import EditProfilePage from './pages/EditProfilePage';
+import JobPreferencesPage from './pages/JobPreferencesPage';
+import { UserProfile } from './types';
 
-export type Screen = 'OVERVIEW' | 'FIND_JOBS' | 'JOB_DETAILS' | 'SIGN_IN' | 'SIGN_UP';
+export type Screen = 
+  | 'OVERVIEW' 
+  | 'FIND_JOBS' 
+  | 'JOB_DETAILS' 
+  | 'MY_PROFILE' 
+  | 'EDIT_PROFILE' 
+  | 'JOB_PREFERENCES' 
+  | 'SIGN_IN' 
+  | 'SIGN_UP';
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('OVERVIEW');
-  const [currentUser, setCurrentUser] = useState<{ name: string; email: string }>({ name: 'Arjun Rao', email: 'arjun.rao@college.edu' });
   const [selectedJobId, setSelectedJobId] = useState<string>('job-rzp');
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+
+  // Candidate Profile State (synchronized with MongoDB Atlas)
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    fullName: 'Arjun Rao',
+    email: 'arjun@college.edu',
+    emailVerified: true,
+    graduationYear: '2025',
+    degree: 'B.Tech / B.E.',
+    specialization: 'Computer Science & Engineering',
+    collegeName: 'RV College of Engineering, Bengaluru',
+    phone: '98452 11094',
+    cgpa: '8.4',
+    skills: ['Java', 'Spring Boot', 'PostgreSQL', 'React', 'Git'],
+    targetRoles: ['Backend Developer', 'Software Engineer', 'Java Developer', 'QA / Test Automation Engineer'],
+    preferredLocations: ['Bengaluru', 'Hyderabad', 'Pune'],
+    workModes: ['Hybrid', 'On-site'],
+    employmentTypes: ['Full-time Direct Hire', 'Paid Technical Internships'],
+    interviewPreference: 'online',
+    workingDaysPreference: '5_days',
+    salaryFloorLpa: 2.4,
+  });
+
+  // Fetch initial profile from MongoDB Atlas if available
+  useEffect(() => {
+    fetch('/api/v1/auth/profile', { credentials: 'include' })
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((json) => {
+        if (json && json.data) {
+          setUserProfile((prev) => ({
+            ...prev,
+            ...json.data,
+            skills: json.data.skills?.length > 0 ? json.data.skills : prev.skills,
+            targetRoles: json.data.targetRoles?.length > 0 ? json.data.targetRoles : prev.targetRoles,
+            preferredLocations: json.data.preferredLocations?.length > 0 ? json.data.preferredLocations : prev.preferredLocations,
+          }));
+        }
+      })
+      .catch(() => {
+        // Fallback to local default state
+      });
+  }, []);
 
   const navigateToJob = (jobId: string) => {
     setSelectedJobId(jobId);
@@ -25,7 +81,7 @@ export default function App() {
     if (e.target.files && e.target.files[0]) {
       setUploadMessage('Parsing master resume against 18 fresher specifications...');
       setTimeout(() => {
-        setUploadMessage('✓ Master Resume (Arjun_Rao_2024.pdf) analyzed! 14 verified skills synced.');
+        setUploadMessage('✓ Master Resume (Arjun_Rao_2025.pdf) analyzed! 14 verified skills synced.');
         setTimeout(() => {
           setUploadMessage(null);
           setIsResumeModalOpen(false);
@@ -34,12 +90,16 @@ export default function App() {
     }
   };
 
-  // If in standalone Auth screens, render without the main dashboard shell chrome
+  // Standalone Auth views render without chrome
   if (activeScreen === 'SIGN_IN') {
     return (
       <SignInPage 
         onSignInSuccess={(user) => {
-          setCurrentUser(user);
+          setUserProfile((prev) => ({
+            ...prev,
+            fullName: user.name,
+            email: user.email,
+          }));
           setActiveScreen('OVERVIEW');
         }}
         onNavigateToSignUp={() => setActiveScreen('SIGN_UP')}
@@ -51,7 +111,11 @@ export default function App() {
     return (
       <SignUpPage 
         onSignUpSuccess={(user) => {
-          setCurrentUser(user);
+          setUserProfile((prev) => ({
+            ...prev,
+            fullName: user.name,
+            email: user.email,
+          }));
           setActiveScreen('OVERVIEW');
         }}
         onNavigateToSignIn={() => setActiveScreen('SIGN_IN')}
@@ -59,30 +123,46 @@ export default function App() {
     );
   }
 
+  const initials = userProfile.fullName
+    ? userProfile.fullName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+    : 'AR';
+
   return (
-    <div className="min-h-screen bg-[#faf8ff] text-[#0f172a] font-sans flex flex-col">
+    <div className="min-h-screen bg-[#faf8ff] text-[#0f172a] font-sans flex flex-col antialiased">
       
-      {/* Sidebar (Fixed on Left, 240px wide) */}
-      <aside className="fixed left-0 top-0 h-screen w-60 bg-white border-r border-[#e8eaf6] z-50 flex flex-col justify-between shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+      {/* Sidebar (Fixed on Left, 240px wide on desktop; drawer on mobile) */}
+      <aside className={`fixed left-0 top-0 h-screen w-60 bg-white border-r border-[#e8eaf6] z-50 flex flex-col justify-between shadow-xs transition-transform duration-300 ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
         
         <div className="flex flex-col flex-1 min-h-0">
           
           {/* Logo Brand Header */}
-          <div className="h-14 px-4 flex items-center gap-2.5 border-b border-[#f1f5f9]">
-            <div className="w-8 h-8 rounded-lg bg-[#4338ca] text-white flex items-center justify-center font-bold text-sm shadow-xs">
-              IT
-            </div>
-            <div>
-              <div className="text-[13px] font-bold text-[#0f172a] tracking-tight leading-tight">
-                IT Career Partner
+          <div className="h-14 px-4 flex items-center justify-between border-b border-[#f1f5f9]">
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveScreen('OVERVIEW')}>
+              <div className="w-8 h-8 rounded-lg bg-[#4338ca] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                IT
               </div>
-              <div className="text-[10px] font-mono text-[#94a3b8] uppercase">
-                ENG | IND v1.0
+              <div>
+                <div className="text-[13px] font-bold text-[#0f172a] tracking-tight leading-tight">
+                  IT Career Partner
+                </div>
+                <div className="text-[10px] font-mono text-[#94a3b8] uppercase">
+                  IND FRESHER v1.0
+                </div>
               </div>
             </div>
+
+            {/* Mobile close toggle */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden text-[#94a3b8] hover:text-[#0f172a]"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
           </div>
 
-          {/* Nav items list */}
+          {/* Nav Items List */}
           <div className="p-3 flex flex-col gap-4 overflow-y-auto flex-1 text-xs font-medium text-[#64748b]">
             
             {/* Group: DISCOVERY */}
@@ -91,9 +171,8 @@ export default function App() {
                 DISCOVERY
               </span>
 
-              {/* Overview / Dashboard */}
               <button 
-                onClick={() => setActiveScreen('OVERVIEW')}
+                onClick={() => { setActiveScreen('OVERVIEW'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
                   activeScreen === 'OVERVIEW'
                     ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
@@ -109,9 +188,8 @@ export default function App() {
                 )}
               </button>
 
-              {/* Find Jobs */}
               <button 
-                onClick={() => setActiveScreen('FIND_JOBS')}
+                onClick={() => { setActiveScreen('FIND_JOBS'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
                   activeScreen === 'FIND_JOBS'
                     ? 'bg-[#4338ca] text-white font-bold shadow-xs'
@@ -129,9 +207,8 @@ export default function App() {
                 </span>
               </button>
 
-              {/* Walk-in Radar */}
               <button 
-                onClick={() => setActiveScreen('FIND_JOBS')}
+                onClick={() => { setActiveScreen('FIND_JOBS'); setIsMobileMenuOpen(false); }}
                 className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
               >
                 <div className="flex items-center gap-2">
@@ -142,18 +219,65 @@ export default function App() {
                   LIVE
                 </span>
               </button>
+            </div>
 
-              {/* Top Matches */}
+            {/* Group: PROFILE & PREFERENCES (The 3 Stitch Interfaces) */}
+            <div className="flex flex-col gap-1">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
+                CANDIDATE CALIBRATION
+              </span>
+
+              {/* Interface 1: Profile Overview */}
               <button 
-                onClick={() => setActiveScreen('OVERVIEW')}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
+                onClick={() => { setActiveScreen('MY_PROFILE'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'MY_PROFILE'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-[#059669]">auto_awesome</span>
-                  <span>Top Matches</span>
+                  <span className="material-symbols-outlined text-[17px]">badge</span>
+                  <span>Profile Overview</span>
                 </div>
-                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.2 rounded">
-                  85%+
+                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.5 rounded">
+                  Tier 1
+                </span>
+              </button>
+
+              {/* Interface 2: Edit Profile */}
+              <button 
+                onClick={() => { setActiveScreen('EDIT_PROFILE'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'EDIT_PROFILE'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">edit_square</span>
+                  <span>Edit Credentials</span>
+                </div>
+                <span className="text-[10px] font-mono text-[#64748b]">
+                  {userProfile.skills?.length || 5} Stack
+                </span>
+              </button>
+
+              {/* Interface 3: Job Preferences */}
+              <button 
+                onClick={() => { setActiveScreen('JOB_PREFERENCES'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'JOB_PREFERENCES'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">tune</span>
+                  <span>Job Preferences</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#fffbeb] text-[#b45309] font-bold px-1.5 py-0.5 rounded">
+                  &gt; ₹2.4L
                 </span>
               </button>
             </div>
@@ -164,9 +288,8 @@ export default function App() {
                 INTELLIGENCE
               </span>
 
-              {/* Master Resume */}
               <button 
-                onClick={() => setIsResumeModalOpen(true)}
+                onClick={() => { setIsResumeModalOpen(true); setIsMobileMenuOpen(false); }}
                 className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
               >
                 <div className="flex items-center gap-2">
@@ -178,9 +301,8 @@ export default function App() {
                 </span>
               </button>
 
-              {/* Job Details & AI Match Breakdown (Screen 3) */}
               <button 
-                onClick={() => setActiveScreen('JOB_DETAILS')}
+                onClick={() => { setActiveScreen('JOB_DETAILS'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
                   activeScreen === 'JOB_DETAILS'
                     ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
@@ -193,30 +315,16 @@ export default function App() {
                 </div>
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
               </button>
-
-              {/* Monitored Portals */}
-              <button 
-                onClick={() => setActiveScreen('OVERVIEW')}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">domain</span>
-                  <span>Monitored Portals</span>
-                </div>
-                <span className="text-[10px] font-mono bg-[#f1f5f9] px-1.5 py-0.2 rounded">
-                  4
-                </span>
-              </button>
             </div>
 
-            {/* Group: ACCESS & AUTH */}
+            {/* Group: ACCOUNT ACCESS */}
             <div className="flex flex-col gap-1">
               <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
                 ACCOUNT PORTAL
               </span>
 
               <button 
-                onClick={() => setActiveScreen('SIGN_IN')}
+                onClick={() => { setActiveScreen('SIGN_IN'); setIsMobileMenuOpen(false); }}
                 className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
               >
                 <div className="flex items-center gap-2">
@@ -227,7 +335,7 @@ export default function App() {
               </button>
 
               <button 
-                onClick={() => setActiveScreen('SIGN_UP')}
+                onClick={() => { setActiveScreen('SIGN_UP'); setIsMobileMenuOpen(false); }}
                 className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
               >
                 <div className="flex items-center gap-2">
@@ -242,71 +350,63 @@ export default function App() {
         </div>
 
         {/* Profile Card at bottom of sidebar */}
-        <div className="p-3 border-t border-[#f1f5f9] bg-[#f8fafc]">
+        <div 
+          onClick={() => { setActiveScreen('MY_PROFILE'); setIsMobileMenuOpen(false); }}
+          className="p-3 border-t border-[#f1f5f9] bg-[#f8fafc] cursor-pointer hover:bg-[#f1f5f9] transition"
+          title="Click to view full Profile"
+        >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-[#4338ca] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-                AR
+                {initials}
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-bold text-[#0f172a] truncate">{currentUser.name}</div>
-                <div className="text-[10px] text-[#64748b] font-mono">2024 Grad</div>
+                <div className="text-xs font-bold text-[#0f172a] truncate">{userProfile.fullName}</div>
+                <div className="text-[10px] text-[#64748b] font-mono">{userProfile.graduationYear || '2025'} Grad</div>
               </div>
             </div>
-            <button 
-              onClick={() => setActiveScreen('SIGN_IN')}
-              title="Switch account / Sign in"
-              className="text-[#94a3b8] hover:text-[#4338ca]"
-            >
-              <span className="material-symbols-outlined text-[17px]">logout</span>
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-[#e2e8f0] text-[10px] font-mono">
-            <span className="bg-white border border-[#e2e8f0] px-1.5 py-0.5 rounded text-[#334155]">
-              Min ₹2.4 LPA
-            </span>
-            <span className="flex items-center gap-1 text-[#059669] font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>
-              Sync: Active
-            </span>
+            <span className="material-symbols-outlined text-[#94a3b8] text-[18px]">chevron_right</span>
           </div>
         </div>
 
       </aside>
 
-      {/* Main Column Offset by Sidebar (240px) */}
-      <div className="pl-60 flex flex-col flex-1">
+      {/* Main App Layout Shell */}
+      <div className="flex-1 flex flex-col lg:pl-60">
         
-        {/* Top Navigation Bar (Fixed, 56px high) */}
-        <header className="fixed top-0 left-60 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-[#e8eaf6] z-40 flex items-center justify-between px-6 shadow-2xs">
+        {/* Top Floating App Header */}
+        <header className="fixed top-0 left-0 right-0 lg:left-60 h-14 bg-white/95 backdrop-blur-md border-b border-[#e8eaf6] z-40 flex items-center justify-between px-4 sm:px-6 shadow-2xs">
           
-          {/* Search Input with ⌘K */}
-          <div 
-            onClick={() => setActiveScreen('FIND_JOBS')}
-            className="relative flex items-center w-full max-w-md cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[18px] text-[#94a3b8] absolute left-3">
-              search
-            </span>
-            <input 
-              readOnly
-              type="text"
-              placeholder="Search roles, companies, tech stacks..."
-              className="w-full h-9 pl-9 pr-12 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg text-xs placeholder-[#94a3b8] focus:outline-none cursor-pointer font-medium"
-            />
-            <kbd className="absolute right-2.5 text-[10px] font-mono bg-white border border-[#e2e8f0] text-[#64748b] px-1.5 py-0.5 rounded pointer-events-none">
-              ⌘K
-            </kbd>
+          <div className="flex items-center gap-3">
+            {/* Mobile Hamburger */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-1.5 text-[#64748b] hover:text-[#0f172a] rounded-lg"
+            >
+              <span className="material-symbols-outlined text-[22px]">menu</span>
+            </button>
+
+            {/* Breadcrumb Context */}
+            <div className="flex items-center gap-2 text-xs font-medium text-[#64748b]">
+              <span className="text-[#0f172a] font-bold hidden sm:inline">JobMate India</span>
+              <span className="material-symbols-outlined text-[14px] text-[#cbd5e1] hidden sm:inline">chevron_right</span>
+              <span className="text-[#4338ca] font-semibold">
+                {activeScreen === 'OVERVIEW' && 'Executive Dashboard'}
+                {activeScreen === 'FIND_JOBS' && 'Find Verified Jobs'}
+                {activeScreen === 'JOB_DETAILS' && 'Job Details & AI Match'}
+                {activeScreen === 'MY_PROFILE' && 'Profile Overview'}
+                {activeScreen === 'EDIT_PROFILE' && 'Edit Credentials'}
+                {activeScreen === 'JOB_PREFERENCES' && 'Job Preferences'}
+              </span>
+            </div>
           </div>
 
-          {/* Right Action Widgets */}
           <div className="flex items-center gap-3">
             
             {/* Guarantee Pill */}
             <div className="hidden md:flex items-center gap-1.5 bg-[#ecfdf5] border border-[#a7f3d0] text-[#059669] px-2.5 py-1 rounded-full text-xs font-mono font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
-              <span>Freshers: ≥₹2.4 LPA</span>
+              <span>Freshers: ₹2.4 - ₹18 LPA</span>
             </div>
 
             {/* Resume Upload Button */}
@@ -315,16 +415,7 @@ export default function App() {
               className="h-8 px-3.5 bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
             >
               <span className="material-symbols-outlined text-[16px]">upload_file</span>
-              <span className="hidden sm:inline">Upload Master Resume</span>
-            </button>
-
-            {/* Auth Portal Button */}
-            <button 
-              onClick={() => setActiveScreen('SIGN_IN')}
-              className="h-8 px-3 bg-[#FAF8F5] border border-[#EDE6DE] hover:bg-[#f3ede4] text-[#191512] rounded-lg text-xs font-semibold flex items-center gap-1 transition"
-            >
-              <span className="material-symbols-outlined text-[15px]">login</span>
-              <span>Sign In</span>
+              <span className="hidden sm:inline">Master Resume</span>
             </button>
 
             {/* Notification Bell */}
@@ -336,13 +427,13 @@ export default function App() {
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#dc2626]"></span>
             </button>
 
-            {/* Avatar */}
+            {/* Avatar Pill */}
             <div 
-              onClick={() => setActiveScreen('SIGN_IN')}
-              title="Click to switch account"
-              className="w-8 h-8 rounded-full bg-[#0f172a] text-white font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+              onClick={() => setActiveScreen('MY_PROFILE')}
+              title="Click to view candidate profile"
+              className="w-8 h-8 rounded-full bg-[#4338ca] text-white font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs hover:ring-2 hover:ring-[#4338ca]/30 transition"
             >
-              AR
+              {initials}
             </div>
 
           </div>
@@ -350,7 +441,7 @@ export default function App() {
         </header>
 
         {/* Dynamic View Router */}
-        <main className="flex-1 pt-14 pb-12 bg-[#faf8ff]">
+        <main className="flex-1 pt-14 bg-[#faf8ff]">
           {activeScreen === 'OVERVIEW' && (
             <DashboardPage 
               onSelectJob={navigateToJob} 
@@ -366,6 +457,39 @@ export default function App() {
             <JobDetailsPage 
               jobId={selectedJobId} 
               onBack={() => setActiveScreen('FIND_JOBS')} 
+            />
+          )}
+
+          {/* Interface 1: Profile Overview */}
+          {activeScreen === 'MY_PROFILE' && (
+            <ProfileOverviewPage 
+              profile={userProfile}
+              onNavigateToEditProfile={() => setActiveScreen('EDIT_PROFILE')}
+              onNavigateToPreferences={() => setActiveScreen('JOB_PREFERENCES')}
+              onNavigateToDashboard={() => setActiveScreen('OVERVIEW')}
+            />
+          )}
+
+          {/* Interface 2: Edit Profile */}
+          {activeScreen === 'EDIT_PROFILE' && (
+            <EditProfilePage 
+              profile={userProfile}
+              onSaveSuccess={(updated) => {
+                setUserProfile(updated);
+                setActiveScreen('MY_PROFILE');
+              }}
+              onCancel={() => setActiveScreen('MY_PROFILE')}
+            />
+          )}
+
+          {/* Interface 3: Job Preferences */}
+          {activeScreen === 'JOB_PREFERENCES' && (
+            <JobPreferencesPage 
+              profile={userProfile}
+              onSaveSuccess={(updated) => {
+                setUserProfile(updated);
+              }}
+              onNavigateToOverview={() => setActiveScreen('MY_PROFILE')}
             />
           )}
         </main>
@@ -392,7 +516,7 @@ export default function App() {
 
             <label className="border-2 border-dashed border-[#c7d2fe] hover:border-[#4338ca] bg-[#f8fafc] rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition">
               <span className="material-symbols-outlined text-4xl text-[#4338ca] mb-1">cloud_upload</span>
-              <span className="text-xs font-bold text-[#0f172a]">Click or drag &amp; drop resume file</span>
+              <span className="text-xs font-bold text-[#0f172a]">Click or drag & drop resume file</span>
               <span className="text-[11px] font-mono text-[#94a3b8] mt-1">PDF or DOCX up to 10MB</span>
               <input type="file" accept=".pdf,.docx,.doc" className="hidden" onChange={handleFileUpload} />
             </label>
@@ -405,7 +529,7 @@ export default function App() {
 
             <div className="text-[11px] font-mono text-[#64748b] flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[15px] text-[#059669]">verified_user</span>
-              <span>100% Privacy: Stored locally only, never sold to recruiters.</span>
+              <span>100% Privacy: Stored locally only, never sold to third parties.</span>
             </div>
           </div>
         </div>
@@ -414,7 +538,7 @@ export default function App() {
       {/* Drawer: Notifications */}
       {isNotificationOpen && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex justify-end">
-          <div className="bg-white w-full max-w-sm h-full shadow-2xl border-l border-[#e2e8f0] flex flex-col justify-between p-5">
+          <div className="bg-white w-full max-w-sm h-full shadow-2xl border-l border-[#e2e8f0] flex flex-col justify-between p-5 animate-fade-in">
             <div>
               <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3 mb-4">
                 <div className="flex items-center gap-2">
@@ -453,7 +577,7 @@ export default function App() {
                     <span>3h ago</span>
                   </div>
                   <p className="text-[#334155]">
-                    All 42 scrapers active across Indian IT sectors with 100% crawl validity.
+                    All 42 scrapers active across Indian IT hubs with 100% crawl validity.
                   </p>
                 </div>
               </div>

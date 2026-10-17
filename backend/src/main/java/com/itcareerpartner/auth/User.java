@@ -5,6 +5,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document(collection = "users")
 public class User {
@@ -25,6 +27,30 @@ public class User {
     private String degree;
 
     private String targetTrack;
+
+    private String phone;
+
+    private String collegeName;
+
+    private String specialization;
+
+    private String cgpa;
+
+    private List<String> skills = new ArrayList<>();
+
+    private List<String> targetRoles = new ArrayList<>();
+
+    private List<String> preferredLocations = new ArrayList<>();
+
+    private List<String> workModes = new ArrayList<>();
+
+    private List<String> employmentTypes = new ArrayList<>();
+
+    private String interviewPreference = "online";
+
+    private String workingDaysPreference = "5_days";
+
+    private Double salaryFloorLpa = 2.4;
 
     private boolean emailVerified;
 
@@ -66,6 +92,42 @@ public class User {
 
     public String getTargetTrack() { return targetTrack; }
     public void setTargetTrack(String targetTrack) { this.targetTrack = targetTrack; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getCollegeName() { return collegeName; }
+    public void setCollegeName(String collegeName) { this.collegeName = collegeName; }
+
+    public String getSpecialization() { return specialization; }
+    public void setSpecialization(String specialization) { this.specialization = specialization; }
+
+    public String getCgpa() { return cgpa; }
+    public void setCgpa(String cgpa) { this.cgpa = cgpa; }
+
+    public List<String> getSkills() { return skills; }
+    public void setSkills(List<String> skills) { this.skills = skills; }
+
+    public List<String> getTargetRoles() { return targetRoles; }
+    public void setTargetRoles(List<String> targetRoles) { this.targetRoles = targetRoles; }
+
+    public List<String> getPreferredLocations() { return preferredLocations; }
+    public void setPreferredLocations(List<String> preferredLocations) { this.preferredLocations = preferredLocations; }
+
+    public List<String> getWorkModes() { return workModes; }
+    public void setWorkModes(List<String> workModes) { this.workModes = workModes; }
+
+    public List<String> getEmploymentTypes() { return employmentTypes; }
+    public void setEmploymentTypes(List<String> employmentTypes) { this.employmentTypes = employmentTypes; }
+
+    public String getInterviewPreference() { return interviewPreference; }
+    public void setInterviewPreference(String interviewPreference) { this.interviewPreference = interviewPreference; }
+
+    public String getWorkingDaysPreference() { return workingDaysPreference; }
+    public void setWorkingDaysPreference(String workingDaysPreference) { this.workingDaysPreference = workingDaysPreference; }
+
+    public Double getSalaryFloorLpa() { return salaryFloorLpa; }
+    public void setSalaryFloorLpa(Double salaryFloorLpa) { this.salaryFloorLpa = salaryFloorLpa; }
 
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }

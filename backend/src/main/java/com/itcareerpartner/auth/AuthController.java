@@ -90,6 +90,44 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok(profile));
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<UserProfileDto>> getProfile(HttpServletRequest httpRequest) {
+        UserProfileDto profile = authService.getCurrentUser(httpRequest);
+        if (profile == null) {
+            UserProfileDto demo = new UserProfileDto(
+                    "demo-user",
+                    "Arjun Rao",
+                    "arjun@college.edu",
+                    true,
+                    "2025",
+                    "B.Tech CSE",
+                    "Full-Stack Development"
+            );
+            demo.setPhone("98452 11094");
+            demo.setCollegeName("RV College of Engineering, Bengaluru");
+            demo.setSpecialization("Computer Science & Engineering");
+            demo.setCgpa("8.4");
+            demo.setSkills(List.of("Java", "Spring Boot", "PostgreSQL", "React", "Git"));
+            demo.setTargetRoles(List.of("Backend Developer", "Software Engineer", "Java Developer", "QA / Test Automation Engineer"));
+            demo.setPreferredLocations(List.of("Bengaluru", "Hyderabad", "Pune"));
+            demo.setWorkModes(List.of("Hybrid", "On-site"));
+            demo.setEmploymentTypes(List.of("Full-time Direct Hire", "Paid Technical Internships"));
+            demo.setInterviewPreference("online");
+            demo.setWorkingDaysPreference("5_days");
+            demo.setSalaryFloorLpa(2.4);
+            return ResponseEntity.ok(ApiResponse.ok(demo));
+        }
+        return ResponseEntity.ok(ApiResponse.ok(profile));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<UserProfileDto>> updateProfile(
+            @RequestBody UserProfileDto profileDto,
+            HttpServletRequest httpRequest) {
+        UserProfileDto updated = authService.updateProfile(profileDto, httpRequest);
+        return ResponseEntity.ok(ApiResponse.ok(updated));
+    }
+
     @GetMapping("/csrf")
     public ResponseEntity<ApiResponse<Map<String, String>>> getCsrfToken(HttpServletRequest request) {
         String csrfToken = UUID.randomUUID().toString();

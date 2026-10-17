@@ -80,3 +80,25 @@ export interface PipelineItem {
   roundDetails: string;
   statusType: 'INTERVIEW' | 'ASSESSMENT' | 'UNDER_REVIEW';
 }
+
+export interface UserProfile {
+  id?: string;
+  fullName: string;
+  email: string;
+  emailVerified?: boolean;
+  graduationYear?: string;
+  degree?: string;
+  targetTrack?: string;
+  phone?: string;
+  collegeName?: string;
+  specialization?: string;
+  cgpa?: string;
+  skills: string[];
+  targetRoles: string[];
+  preferredLocations: string[];
+  workModes: string[];
+  employmentTypes: string[];
+  interviewPreference?: string;
+  workingDaysPreference?: string;
+  salaryFloorLpa?: number;
+}

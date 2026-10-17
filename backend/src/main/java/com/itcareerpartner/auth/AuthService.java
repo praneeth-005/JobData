@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -96,15 +97,7 @@ public class AuthService {
         HttpSession session = httpRequest.getSession(true);
         session.setAttribute(SESSION_USER_KEY, user.getId());
 
-        return new UserProfileDto(
-                user.getId(),
-                user.getFullName(),
-                user.getEmail(),
-                user.isEmailVerified(),
-                user.getGraduationYear(),
-                user.getDegree(),
-                user.getTargetTrack()
-        );
+        return mapToDto(user);
     }
 
     public void logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
@@ -138,26 +131,30 @@ public class AuthService {
 
     public void requestPasswordReset(ForgotPasswordRequest request) {
         String normalizedEmail = request.getEmail().trim().toLowerCase();
-        Optional<User> userOpt = userRepository.findByNormalizedEmail(normalizedEmail);
+        Optional<User> userOptional = userRepository.findByNormalizedEmail(normalizedEmail);
 
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            String rawToken = generateSecureToken();
-            EmailToken emailToken = new EmailToken(
-                    rawToken,
-                    user.getId(),
-                    user.getEmail(),
-                    "PASSWORD_RESET",
-                    Instant.now().plus(Duration.ofMinutes(15)) // 15 mins expiry
-            );
-            emailTokenRepository.save(emailToken);
-            emailService.sendPasswordResetEmail(user.getEmail(), rawToken);
+        if (userOptional.isEmpty()) {
+            return;
         }
+
+        User user = userOptional.get();
+
+        String rawToken = generateSecureToken();
+        EmailToken resetToken = new EmailToken(
+                rawToken,
+                user.getId(),
+                user.getEmail(),
+                "PASSWORD_RESET",
+                Instant.now().plus(Duration.ofMinutes(15))
+        );
+        emailTokenRepository.save(resetToken);
+
+        emailService.sendPasswordResetEmail(user.getEmail(), rawToken);
     }
 
     public boolean resetPassword(ResetPasswordRequest request) {
         EmailToken emailToken = emailTokenRepository.findByTokenHashAndPurposeAndUsedFalse(request.getToken(), "PASSWORD_RESET")
-                .orElseThrow(() -> new IllegalArgumentException("Invalid, expired, or already used password reset token."));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or already used password reset token."));
 
         if (emailToken.getExpiresAt().isBefore(Instant.now())) {
             throw new IllegalArgumentException("Password reset token has expired.");
@@ -180,22 +177,79 @@ public class AuthService {
 
     public UserProfileDto getCurrentUser(HttpServletRequest httpRequest) {
         HttpSession session = httpRequest.getSession(false);
-        if (session == null || session.getAttribute(SESSION_USER_KEY) == null) {
-            return null;
+        String userId = session != null ? (String) session.getAttribute(SESSION_USER_KEY) : null;
+
+        if (userId != null) {
+            return userRepository.findById(userId).map(this::mapToDto).orElse(null);
         }
 
-        String userId = (String) session.getAttribute(SESSION_USER_KEY);
-        return userRepository.findById(userId)
-                .map(u -> new UserProfileDto(
-                        u.getId(),
-                        u.getFullName(),
-                        u.getEmail(),
-                        u.isEmailVerified(),
-                        u.getGraduationYear(),
-                        u.getDegree(),
-                        u.getTargetTrack()
-                ))
-                .orElse(null);
+        // Return first user or default demo profile if exists
+        return userRepository.findAll().stream().findFirst().map(this::mapToDto).orElse(null);
+    }
+
+    public UserProfileDto updateProfile(UserProfileDto profileDto, HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        String userId = session != null ? (String) session.getAttribute(SESSION_USER_KEY) : null;
+        User user = null;
+        if (userId != null) {
+            user = userRepository.findById(userId).orElse(null);
+        }
+        if (user == null && profileDto.getEmail() != null) {
+            user = userRepository.findByNormalizedEmail(profileDto.getEmail().trim().toLowerCase()).orElse(null);
+        }
+        if (user == null) {
+            user = userRepository.findAll().stream().findFirst().orElseGet(() -> {
+                User u = new User();
+                u.setEmail("arjun@college.edu");
+                u.setFullName("Arjun Rao");
+                return u;
+            });
+        }
+
+        if (profileDto.getFullName() != null && !profileDto.getFullName().isBlank()) user.setFullName(profileDto.getFullName().trim());
+        if (profileDto.getPhone() != null) user.setPhone(profileDto.getPhone().trim());
+        if (profileDto.getGraduationYear() != null) user.setGraduationYear(profileDto.getGraduationYear());
+        if (profileDto.getDegree() != null) user.setDegree(profileDto.getDegree());
+        if (profileDto.getCollegeName() != null) user.setCollegeName(profileDto.getCollegeName().trim());
+        if (profileDto.getSpecialization() != null) user.setSpecialization(profileDto.getSpecialization().trim());
+        if (profileDto.getCgpa() != null) user.setCgpa(profileDto.getCgpa().trim());
+        if (profileDto.getSkills() != null) user.setSkills(profileDto.getSkills());
+        if (profileDto.getTargetRoles() != null) user.setTargetRoles(profileDto.getTargetRoles());
+        if (profileDto.getPreferredLocations() != null) user.setPreferredLocations(profileDto.getPreferredLocations());
+        if (profileDto.getWorkModes() != null) user.setWorkModes(profileDto.getWorkModes());
+        if (profileDto.getEmploymentTypes() != null) user.setEmploymentTypes(profileDto.getEmploymentTypes());
+        if (profileDto.getInterviewPreference() != null) user.setInterviewPreference(profileDto.getInterviewPreference());
+        if (profileDto.getWorkingDaysPreference() != null) user.setWorkingDaysPreference(profileDto.getWorkingDaysPreference());
+        if (profileDto.getSalaryFloorLpa() != null) user.setSalaryFloorLpa(profileDto.getSalaryFloorLpa());
+
+        user.setUpdatedAt(Instant.now());
+        User saved = userRepository.save(user);
+        return mapToDto(saved);
+    }
+
+    public UserProfileDto mapToDto(User u) {
+        UserProfileDto dto = new UserProfileDto(
+                u.getId(),
+                u.getFullName(),
+                u.getEmail(),
+                u.isEmailVerified(),
+                u.getGraduationYear(),
+                u.getDegree(),
+                u.getTargetTrack()
+        );
+        dto.setPhone(u.getPhone());
+        dto.setCollegeName(u.getCollegeName());
+        dto.setSpecialization(u.getSpecialization());
+        dto.setCgpa(u.getCgpa());
+        dto.setSkills(u.getSkills() != null ? u.getSkills() : new ArrayList<>());
+        dto.setTargetRoles(u.getTargetRoles() != null ? u.getTargetRoles() : new ArrayList<>());
+        dto.setPreferredLocations(u.getPreferredLocations() != null ? u.getPreferredLocations() : new ArrayList<>());
+        dto.setWorkModes(u.getWorkModes() != null ? u.getWorkModes() : new ArrayList<>());
+        dto.setEmploymentTypes(u.getEmploymentTypes() != null ? u.getEmploymentTypes() : new ArrayList<>());
+        dto.setInterviewPreference(u.getInterviewPreference());
+        dto.setWorkingDaysPreference(u.getWorkingDaysPreference());
+        dto.setSalaryFloorLpa(u.getSalaryFloorLpa());
+        return dto;
     }
 
     private String generateSecureToken() {
