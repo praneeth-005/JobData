@@ -27,10 +27,12 @@ export default function ProfileOverviewPage({
 
   // Calculate dynamic completion percentage
   const hasPhone = Boolean(profile.phone && profile.phone.trim().length > 4);
-  const hasSkills = profile.skills && profile.skills.length >= 5;
-  const hasPreferences = profile.targetRoles && profile.targetRoles.length > 0;
+  const hasDegree = Boolean(profile.degree && profile.degree.trim().length > 0);
+  const hasSkills = Boolean(profile.skills && profile.skills.length >= 5);
+  const hasPreferences = Boolean(profile.targetRoles && profile.targetRoles.length > 0);
   
-  let completedSections = 1; // Education defaults to verified
+  let completedSections = 0;
+  if (hasDegree) completedSections++;
   if (hasPhone) completedSections++;
   if (hasSkills) completedSections++;
   if (hasPreferences) completedSections++;
@@ -106,18 +108,18 @@ export default function ProfileOverviewPage({
 
               {/* Identity Block */}
               <div className="space-y-1.5">
-                <h2 className="text-xl sm:text-2xl font-bold text-[#0f172a]">{profile.fullName || 'Arjun Rao'}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#0f172a]">{profile.fullName || 'Not specified'}</h2>
                 <p className="text-xs sm:text-sm text-[#475569] font-medium">
                   {profile.targetTrack ? `${profile.targetTrack} Engineer` : 'Aspiring Distributed Systems & Backend Engineer'}
                 </p>
                 <div className="flex flex-wrap gap-2 pt-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f8fafc] border border-[#e2e8f0] text-[#334155] text-xs font-medium">
                     <span className="material-symbols-outlined text-[14px] text-[#059669]">school</span>
-                    {profile.degree || 'B.Tech CSE'} • {profile.graduationYear || '2025'}
+                    {profile.degree || 'Not specified'} · {profile.graduationYear || 'Not specified'}
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f8fafc] border border-[#e2e8f0] text-[#334155] text-xs font-medium">
                     <span className="material-symbols-outlined text-[14px] text-[#4338ca]">location_on</span>
-                    Bengaluru, IN
+                    {profile.preferredLocations && profile.preferredLocations.length > 0 ? profile.preferredLocations[0] : 'Bengaluru, IN'}
                   </span>
                 </div>
               </div>
@@ -131,11 +133,13 @@ export default function ProfileOverviewPage({
                 </div>
                 <div>
                   <p className="text-xs font-bold text-[#0f172a]">Academic Credentials</p>
-                  <p className="text-[11px] text-[#64748b]">{profile.collegeName || 'RV College of Engineering, Bengaluru'}</p>
+                  <p className="text-[11px] text-[#64748b]">{profile.collegeName || 'Not specified'}</p>
                 </div>
               </div>
-              <span className="font-mono text-xs font-bold text-[#059669] bg-[#ecfdf5] px-2 py-0.5 rounded border border-[#a7f3d0]">
-                VERIFIED
+              <span className={`font-mono text-xs font-bold px-2 py-0.5 rounded border ${
+                hasDegree ? 'text-[#059669] bg-[#ecfdf5] border-[#a7f3d0]' : 'text-[#64748b] bg-[#f1f5f9] border-[#e2e8f0]'
+              }`}>
+                {hasDegree ? 'VERIFIED' : 'PENDING'}
               </span>
             </div>
 
@@ -214,7 +218,7 @@ export default function ProfileOverviewPage({
                       </span>
                     </div>
                     <p className="text-[11px] text-[#64748b]">
-                      {hasPhone ? `Contact: +91 ${profile.phone}` : 'Missing contact number for recruiter SMS alert'}
+                      {hasPhone ? `Contact: +91 ${profile.phone}` : 'Not specified — enter number for recruiter alerts'}
                     </p>
                   </div>
                 </div>
@@ -224,30 +228,37 @@ export default function ProfileOverviewPage({
                 </div>
               </div>
 
-              {/* Item 2: Education (Completed) */}
+              {/* Item 2: Education Credentials */}
               <div 
                 onClick={onNavigateToEditProfile}
                 className="group flex items-center justify-between p-3.5 rounded-xl bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#e2e8f0] transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#ecfdf5] text-[#059669] flex items-center justify-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    hasDegree ? 'bg-[#ecfdf5] text-[#059669]' : 'bg-[#fffbeb] text-[#d97706]'
+                  }`}>
                     <span className="material-symbols-outlined text-[17px]">school</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-[#0f172a]">Education Credentials</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#ecfdf5] text-[#059669]">
-                        Verified
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                        hasDegree ? 'bg-[#ecfdf5] text-[#059669]' : 'bg-[#fffbeb] text-[#d97706]'
+                      }`}>
+                        {hasDegree ? 'Verified' : 'Pending'}
                       </span>
                     </div>
                     <p className="text-[11px] text-[#64748b]">
-                      {profile.degree || 'B.Tech CSE'}, {profile.collegeName || 'RV College of Engineering'} ({profile.graduationYear || '2025'})
+                      {hasDegree 
+                        ? `${profile.degree || 'Not specified'}, ${profile.collegeName || 'Not specified'} (${profile.graduationYear || 'Not specified'})`
+                        : 'No education credentials listed — add qualifications'
+                      }
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 text-[#059669] text-xs font-semibold">
                   <span className="material-symbols-outlined text-[16px]">task_alt</span>
-                  <span>Verified</span>
+                  <span>{hasDegree ? 'Verified' : 'Update'}</span>
                 </div>
               </div>
 
@@ -257,18 +268,22 @@ export default function ProfileOverviewPage({
                 className="group flex items-center justify-between p-3.5 rounded-xl bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#e2e8f0] transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#eef2ff] text-[#4338ca] flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[17px]">build</span>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    hasSkills ? 'bg-[#ecfdf5] text-[#059669]' : 'bg-[#fffbeb] text-[#d97706]'
+                  }`}>
+                    <span className="material-symbols-outlined text-[17px]">code</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#0f172a]">Technical Skills Inventory</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#eef2ff] text-[#4338ca]">
-                        {profile.skills?.length || 5} Stack Competencies
+                      <span className="text-xs font-bold text-[#0f172a]">Technical Proficiencies</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                        hasSkills ? 'bg-[#ecfdf5] text-[#059669]' : 'bg-[#fffbeb] text-[#d97706]'
+                      }`}>
+                        {profile.skills ? `${profile.skills.length} Selected` : 'None added'}
                       </span>
                     </div>
                     <p className="text-[11px] text-[#64748b]">
-                      Calibrated across Java, Spring Boot, PostgreSQL, and Git
+                      {profile.skills && profile.skills.length > 0 ? profile.skills.slice(0, 4).join(', ') : 'Not specified — add core tech stack'}
                     </p>
                   </div>
                 </div>
@@ -284,18 +299,22 @@ export default function ProfileOverviewPage({
                 className="group flex items-center justify-between p-3.5 rounded-xl bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#e2e8f0] transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#fffbeb] text-[#d97706] flex items-center justify-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    hasPreferences ? 'bg-[#ecfdf5] text-[#059669]' : 'bg-[#fffbeb] text-[#d97706]'
+                  }`}>
                     <span className="material-symbols-outlined text-[17px]">tune</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#0f172a]">Job Preferences</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#fffbeb] text-[#b45309]">
-                        &gt; ₹2.40 LPA Floor
+                      <span className="text-xs font-bold text-[#0f172a]">Job Discovery Preferences</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                        hasPreferences ? 'bg-[#ecfdf5] text-[#059669]' : 'bg-[#fffbeb] text-[#d97706]'
+                      }`}>
+                        {hasPreferences ? 'Calibrated' : 'Needs Setup'}
                       </span>
                     </div>
                     <p className="text-[11px] text-[#64748b]">
-                      4 Target Roles • Bengaluru, Hyderabad • Online virtual rounds favored
+                      {profile.targetRoles && profile.targetRoles.length > 0 ? profile.targetRoles.slice(0, 2).join(', ') : 'Not specified — set target roles & locations'}
                     </p>
                   </div>
                 </div>
@@ -308,29 +327,17 @@ export default function ProfileOverviewPage({
             </div>
           </div>
 
-          {/* Action Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-[#f1f5f9] mt-6">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <button 
-                onClick={onNavigateToEditProfile}
-                className="w-full sm:w-auto px-5 py-2.5 bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition"
-              >
-                <span>Continue Setup</span>
-                <span className="material-symbols-outlined text-[16px]">east</span>
-              </button>
-              <button 
-                onClick={() => setShowTour(true)}
-                className="w-full sm:w-auto px-4 py-2.5 bg-white border border-[#e2e8f0] hover:bg-[#f8fafc] text-[#334155] rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
-              >
-                <span className="material-symbols-outlined text-[16px]">explore</span>
-                <span>Quick Tour</span>
-              </button>
-            </div>
-            <span className="text-[11px] text-[#94a3b8] font-mono">
-              Estimated completion: ~4 mins
-            </span>
+          {/* Quick Platform Tour link */}
+          <div className="pt-4 mt-4 border-t border-[#f1f5f9] flex items-center justify-between text-xs">
+            <span className="text-[#64748b]">Want a refresher on matching rules?</span>
+            <button 
+              onClick={() => setShowTour(true)}
+              className="inline-flex items-center gap-1 text-[#4338ca] font-semibold hover:underline"
+            >
+              <span>Explore Quick Platform Tour</span>
+              <span className="material-symbols-outlined text-[15px]">open_in_new</span>
+            </button>
           </div>
-
         </div>
 
       </div>
@@ -370,13 +377,13 @@ export default function ProfileOverviewPage({
             <div className="space-y-2.5 pt-1 text-xs">
               <div className="flex flex-col p-3 bg-[#f8fafc] rounded-lg">
                 <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Display Name</span>
-                <span className="font-semibold text-[#0f172a] mt-0.5">{profile.fullName || 'Arjun Rao'}</span>
+                <span className="font-semibold text-[#0f172a] mt-0.5">{profile.fullName || 'Not specified'}</span>
               </div>
               
               <div className="flex items-center justify-between p-3 bg-[#f8fafc] rounded-lg">
                 <div className="flex flex-col">
                   <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Primary Email</span>
-                  <span className="font-semibold text-[#0f172a] mt-0.5">{profile.email || 'arjun@college.edu'}</span>
+                  <span className="font-semibold text-[#0f172a] mt-0.5">{profile.email || 'Not specified'}</span>
                 </div>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#ecfdf5] text-[#059669] font-mono text-[11px] font-bold">
                   <span className="material-symbols-outlined text-[13px]">check_circle</span> Verified
@@ -387,7 +394,7 @@ export default function ProfileOverviewPage({
                 <div className="flex flex-col">
                   <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Contact Phone</span>
                   <span className={`font-semibold mt-0.5 ${hasPhone ? 'text-[#0f172a]' : 'text-[#dc2626] italic'}`}>
-                    {hasPhone ? `+91 ${profile.phone}` : 'Not set'}
+                    {hasPhone ? `+91 ${profile.phone}` : 'Not specified'}
                   </span>
                 </div>
                 <button 
@@ -422,8 +429,10 @@ export default function ProfileOverviewPage({
                 </div>
                 <h3 className="font-bold text-base text-[#0f172a]">Education</h3>
               </div>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-[#ecfdf5] text-[#059669]">
-                Completed
+              <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-semibold ${
+                hasDegree ? 'bg-[#ecfdf5] text-[#059669]' : 'bg-[#fffbeb] text-[#d97706]'
+              }`}>
+                {hasDegree ? 'Completed' : 'Pending'}
               </span>
             </div>
 
@@ -431,31 +440,33 @@ export default function ProfileOverviewPage({
               <div className="flex flex-col p-3 bg-[#f8fafc] rounded-lg sm:col-span-2">
                 <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Qualification & Major</span>
                 <span className="font-semibold text-[#0f172a] mt-0.5">
-                  {profile.degree || 'B.Tech in Computer Science & Engineering'}
+                  {profile.degree || 'Not specified'}
                 </span>
               </div>
               <div className="flex flex-col p-3 bg-[#f8fafc] rounded-lg">
                 <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Institution</span>
                 <span className="font-semibold text-[#0f172a] mt-0.5 truncate">
-                  {profile.collegeName || 'RV College of Engineering'}
+                  {profile.collegeName || 'Not specified'}
                 </span>
               </div>
               <div className="flex flex-col p-3 bg-[#f8fafc] rounded-lg">
                 <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Class of</span>
                 <span className="font-semibold text-[#0f172a] mt-0.5">
-                  {profile.graduationYear || '2025'} (Final Year)
+                  {profile.graduationYear ? `${profile.graduationYear} (Final Year)` : 'Not specified'}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-[#f8fafc] rounded-lg sm:col-span-2">
                 <div className="flex flex-col">
                   <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Cumulative Grade</span>
                   <span className="text-base font-bold text-[#0f172a] font-mono mt-0.5">
-                    {profile.cgpa || '8.4'} <span className="text-xs text-[#64748b] font-normal">/ 10.0 CGPA</span>
+                    {profile.cgpa ? `${profile.cgpa} / 10.0 CGPA` : 'Not specified'}
                   </span>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#059669] font-mono text-[11px] font-bold">
-                  Top 15% Percentile
-                </span>
+                {profile.cgpa && (
+                  <span className="px-2.5 py-1 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#059669] font-mono text-[11px] font-bold">
+                    Verified
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -483,7 +494,7 @@ export default function ProfileOverviewPage({
                 <h3 className="font-bold text-base text-[#0f172a]">Technical Skills</h3>
               </div>
               <span className="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-[#eef2ff] text-[#4338ca]">
-                {profile.skills?.length || 5} Added
+                {profile.skills?.length || 0} Added
               </span>
             </div>
 
@@ -492,11 +503,13 @@ export default function ProfileOverviewPage({
             </p>
 
             <div className="flex flex-wrap gap-2 pt-1">
-              {(profile.skills && profile.skills.length > 0 ? profile.skills : ['Java', 'Spring Boot', 'PostgreSQL', 'React', 'Git']).map((skill) => (
+              {(profile.skills && profile.skills.length > 0 ? profile.skills : ['Not specified']).map((skill) => (
                 <div key={skill} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f1f5f9] text-[#0f172a] text-xs font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#4338ca]"></span>
                   <span>{skill}</span>
-                  <span className="material-symbols-outlined text-[14px] text-[#059669]">verified</span>
+                  {skill !== 'Not specified' && (
+                    <span className="material-symbols-outlined text-[14px] text-[#059669]">verified</span>
+                  )}
                 </div>
               ))}
               <button 
@@ -548,7 +561,7 @@ export default function ProfileOverviewPage({
               <div className="p-3 bg-[#f8fafc] rounded-lg space-y-1.5">
                 <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Target Roles</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {(profile.targetRoles && profile.targetRoles.length > 0 ? profile.targetRoles : ['Backend Developer', 'Software Engineer', 'Java Developer']).map((role) => (
+                  {(profile.targetRoles && profile.targetRoles.length > 0 ? profile.targetRoles : ['Not specified']).map((role) => (
                     <span key={role} className="px-2 py-0.5 rounded bg-white border border-[#e2e8f0] text-[#0f172a] font-medium text-[11px]">
                       {role}
                     </span>
@@ -560,7 +573,7 @@ export default function ProfileOverviewPage({
                 <div className="flex flex-col">
                   <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Salary Floor (Mandatory)</span>
                   <span className="font-bold text-[#0f172a] font-mono mt-0.5">
-                    &gt; ₹{profile.salaryFloorLpa || '2.40'} LPA Mandatory
+                    {profile.salaryFloorLpa ? `> ₹${profile.salaryFloorLpa.toFixed(2)} LPA Mandatory` : '> ₹2.40 LPA Mandatory'}
                   </span>
                 </div>
                 <span className="material-symbols-outlined text-[18px] text-[#059669]">check_circle</span>
@@ -569,11 +582,13 @@ export default function ProfileOverviewPage({
               <div className="p-3 bg-[#f8fafc] rounded-lg space-y-1">
                 <span className="font-mono text-[10px] uppercase text-[#94a3b8]">Preferred Locations</span>
                 <div className="flex flex-wrap items-center gap-2 text-[#0f172a] font-medium text-xs">
-                  <span className="inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#4338ca]"></span>Bengaluru</span>
-                  <span className="text-[#cbd5e1]">•</span>
-                  <span className="inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#4338ca]"></span>Hyderabad</span>
-                  <span className="text-[#cbd5e1]">•</span>
-                  <span className="inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>Remote</span>
+                  {(profile.preferredLocations && profile.preferredLocations.length > 0 ? profile.preferredLocations : ['Not specified']).map((loc, i) => (
+                    <span key={loc} className="inline-flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#4338ca]"></span>
+                      <span>{loc}</span>
+                      {i < (profile.preferredLocations?.length || 1) - 1 && <span className="text-[#cbd5e1] ml-1">·</span>}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>

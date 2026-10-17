@@ -49,6 +49,8 @@ export default function JobPreferencesPage({
   // UI state
   const [isSaving, setIsSaving] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Available add options
   const recommendedRoles = ['Frontend Developer', 'Full-Stack Developer', 'Software Development Engineer (SDE)', 'Data Analyst', 'DevOps / Cloud Engineer'];
@@ -107,6 +109,8 @@ export default function JobPreferencesPage({
 
   const handleSave = async () => {
     setIsSaving(true);
+    setSaveSuccessMessage(null);
+    setErrorMessage(null);
 
     const updatedProfile: UserProfile = {
       ...profile,
@@ -129,11 +133,15 @@ export default function JobPreferencesPage({
 
       if (res.ok) {
         const json = await res.json();
-        onSaveSuccess(json.data || updatedProfile);
+        const data = json.data || updatedProfile;
+        setSaveSuccessMessage('Job preferences and statutory compensation rules saved to MongoDB Atlas!');
+        onSaveSuccess(data);
       } else {
-        onSaveSuccess(updatedProfile);
+        const errJson = await res.json().catch(() => null);
+        setErrorMessage(errJson?.error?.message || 'Failed to save preferences. Server returned an error.');
       }
     } catch {
+      setSaveSuccessMessage('Job preferences saved locally.');
       onSaveSuccess(updatedProfile);
     } finally {
       setIsSaving(false);
@@ -186,6 +194,24 @@ export default function JobPreferencesPage({
           </div>
         </div>
       </div>
+
+      {/* Dynamic Feedback Banners */}
+      {(saveSuccessMessage || errorMessage) && (
+        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          {saveSuccessMessage && (
+            <div className="p-3.5 bg-[#ecfdf5] border border-[#a7f3d0] rounded-xl flex items-center gap-2.5 text-xs text-[#059669] font-medium animate-fade-in">
+              <span className="material-symbols-outlined text-[20px]">check_circle</span>
+              <span>{saveSuccessMessage}</span>
+            </div>
+          )}
+          {errorMessage && (
+            <div className="p-3.5 bg-[#fef2f2] border border-[#fecaca] rounded-xl flex items-center gap-2.5 text-xs text-[#dc2626] font-medium animate-fade-in">
+              <span className="material-symbols-outlined text-[20px]">error</span>
+              <span>{errorMessage}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Multi-Column Canvas */}
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 xl:grid-cols-12 gap-8">

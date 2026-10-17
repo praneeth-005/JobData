@@ -121,6 +121,7 @@ public class AuthService {
     public void logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         HttpSession session = httpRequest.getSession(false);
         if (session != null) {
+            session.removeAttribute(SESSION_USER_KEY);
             session.invalidate();
         }
     }
@@ -200,27 +201,27 @@ public class AuthService {
             return userRepository.findById(userId).map(this::mapToDto).orElse(null);
         }
 
-        // Return first user or default profile if exists
-        return userRepository.findAll().stream().findFirst().map(this::mapToDto).orElse(null);
+        return null;
     }
 
     public UserProfileDto updateProfile(UserProfileDto profileDto, HttpServletRequest httpRequest) {
         HttpSession session = httpRequest.getSession(false);
         String userId = session != null ? (String) session.getAttribute(SESSION_USER_KEY) : null;
         User user = null;
+
         if (userId != null) {
             user = userRepository.findById(userId).orElse(null);
-        }
-        if (user == null && profileDto.getEmail() != null) {
+        } else if (profileDto.getEmail() != null && !profileDto.getEmail().isBlank()) {
             user = userRepository.findByNormalizedEmail(profileDto.getEmail().trim().toLowerCase()).orElse(null);
         }
+
         if (user == null) {
-            user = userRepository.findAll().stream().findFirst().orElseGet(() -> {
-                User u = new User();
-                u.setEmail("arjun@college.edu");
-                u.setFullName("Arjun Rao");
-                return u;
-            });
+            throw new IllegalArgumentException("Authentication required: Please sign in to edit your profile and preferences.");
+        }
+
+        // Security check: Candidate can only edit their own profile
+        if (userId != null && !user.getId().equals(userId)) {
+            throw new IllegalArgumentException("Unauthorized: You can only view and edit your own profile.");
         }
 
         // 1. Validate and update Full Name
@@ -241,7 +242,7 @@ public class AuthService {
             user.setPhone(profileDto.getPhone().trim());
         }
 
-        // 3. Process & Validate Education Credentials List (supports removals, additions, updates)
+        // 3. Process & Validate Education Credentials List
         if (profileDto.getEducationList() != null) {
             List<EducationCredential> validatedList = new ArrayList<>();
             for (EducationCredential edu : profileDto.getEducationList()) {
@@ -307,7 +308,6 @@ public class AuthService {
                 user.setCollegeName(primary.getInstitution());
                 user.setCgpa(primary.getScoreValue());
             } else {
-                // If user removed all education details
                 user.setDegree("");
                 user.setGraduationYear("");
                 user.setSpecialization("");
@@ -324,14 +324,53 @@ public class AuthService {
         }
 
         // 4. Skills & Preferences Updates
-        if (profileDto.getSkills() != null) user.setSkills(profileDto.getSkills());
-        if (profileDto.getTargetRoles() != null) user.setTargetRoles(profileDto.getTargetRoles());
-        if (profileDto.getPreferredLocations() != null) user.setPreferredLocations(profileDto.getPreferredLocations());
-        if (profileDto.getWorkModes() != null) user.setWorkModes(profileDto.getWorkModes());
-        if (profileDto.getEmploymentTypes() != null) user.setEmploymentTypes(profileDto.getEmploymentTypes());
-        if (profileDto.getInterviewPreference() != null) user.setInterviewPreference(profileDto.getInterviewPreference());
-        if (profileDto.getWorkingDaysPreference() != null) user.setWorkingDaysPreference(profileDto.getWorkingDaysPreference());
-        if (profileDto.getSalaryFloorLpa() != null) user.setSalaryFloorLpa(profileDto.getSalaryFloorLpa());
+        if (profileDto.getSkills() != null) {
+            List<String> sanitizedSkills = profileDto.getSkills().stream()
+                    .filter(s -> s != null && !s.isBlank())
+                    .map(String::trim)
+                    .distinct()
+                    .limit(50)
+                    .toList();
+            user.setSkills(sanitizedSkills);
+        }
+        if (profileDto.getTargetRoles() != null) {
+            List<String> sanitizedRoles = profileDto.getTargetRoles().stream()
+                    .filter(r -> r != null && !r.isBlank())
+                    .map(String::trim)
+                    .distinct()
+                    .limit(25)
+                    .toList();
+            user.setTargetRoles(sanitizedRoles);
+        }
+        if (profileDto.getPreferredLocations() != null) {
+            List<String> sanitizedLocs = profileDto.getPreferredLocations().stream()
+                    .filter(l -> l != null && !l.isBlank())
+                    .map(String::trim)
+                    .distinct()
+                    .limit(20)
+                    .toList();
+            user.setPreferredLocations(sanitizedLocs);
+        }
+        if (profileDto.getWorkModes() != null) {
+            user.setWorkModes(profileDto.getWorkModes().stream().filter(m -> m != null && !m.isBlank()).map(String::trim).distinct().toList());
+        }
+        if (profileDto.getEmploymentTypes() != null) {
+            user.setEmploymentTypes(profileDto.getEmploymentTypes().stream().filter(t -> t != null && !t.isBlank()).map(String::trim).distinct().toList());
+        }
+        if (profileDto.getInterviewPreference() != null) {
+            user.setInterviewPreference(profileDto.getInterviewPreference().trim());
+        }
+        if (profileDto.getWorkingDaysPreference() != null) {
+            user.setWorkingDaysPreference(profileDto.getWorkingDaysPreference().trim());
+        }
+
+        // 5. Mandatory salary & stipend rules enforcement (BR-02: >= 2.4 LPA)
+        if (profileDto.getSalaryFloorLpa() != null) {
+            if (profileDto.getSalaryFloorLpa() < 2.4) {
+                throw new IllegalArgumentException("Statutory salary floor cannot be less than 2.4 LPA (BR-02 compliance requirement).");
+            }
+            user.setSalaryFloorLpa(profileDto.getSalaryFloorLpa());
+        }
 
         user.setUpdatedAt(Instant.now());
         User saved = userRepository.save(user);
