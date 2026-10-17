@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import DashboardPage from './pages/DashboardPage';
 import FindJobsPage from './pages/FindJobsPage';
+import SearchFilterJobsPage from './pages/SearchFilterJobsPage';
 import JobDetailsPage from './pages/JobDetailsPage';
+import EligibilityExplanationPage from './pages/EligibilityExplanationPage';
+import StatesAndFeedbackLibraryPage from './pages/StatesAndFeedbackLibraryPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ProfileOverviewPage from './pages/ProfileOverviewPage';
@@ -15,7 +18,10 @@ import { UserProfile } from './types';
 export type Screen = 
   | 'OVERVIEW' 
   | 'FIND_JOBS' 
+  | 'SEARCH_FILTER'
   | 'JOB_DETAILS' 
+  | 'ELIGIBILITY_EXPLANATION'
+  | 'STATES_FEEDBACK'
   | 'MY_PROFILE' 
   | 'EDIT_PROFILE' 
   | 'JOB_PREFERENCES' 
@@ -27,7 +33,7 @@ export type Screen =
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('OVERVIEW');
-  const [selectedJobId, setSelectedJobId] = useState<string>('job-rzp');
+  const [selectedJobId, setSelectedJobId] = useState<string>('job-tw');
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -84,6 +90,12 @@ export default function App() {
   const navigateToJob = (jobId: string) => {
     setSelectedJobId(jobId);
     setActiveScreen('JOB_DETAILS');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const navigateToEligibility = (jobId: string) => {
+    setSelectedJobId(jobId);
+    setActiveScreen('ELIGIBILITY_EXPLANATION');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -205,6 +217,7 @@ export default function App() {
                 )}
               </button>
 
+              {/* Stitch Interface 1: Find Jobs (Discovery Dashboard) */}
               <button 
                 onClick={() => { setActiveScreen('FIND_JOBS'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -214,24 +227,35 @@ export default function App() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">search</span>
+                  <span className="material-symbols-outlined text-[17px]">work</span>
                   <span>Find Jobs</span>
                 </div>
-                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                  activeScreen === 'FIND_JOBS' ? 'bg-white/20 text-white' : 'bg-[#eef2ff] text-[#4338ca]'
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'FIND_JOBS' ? 'bg-white/20 text-white' : 'bg-[#ecfdf5] text-[#059669]'
                 }`}>
-                  34
+                  Live
                 </span>
               </button>
-            </div>
 
-            {/* Group: CONTINUOUS DISCOVERY (Stitch Interfaces) */}
-            <div className="flex flex-col gap-1">
-              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
-                SOURCES & DISCOVERY
-              </span>
+              {/* Stitch Interface 2: Search & Filter Jobs (Software IT Company Search) */}
+              <button 
+                onClick={() => { setActiveScreen('SEARCH_FILTER'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'SEARCH_FILTER'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">search_insights</span>
+                  <span>Search &amp; Filter</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#eef2ff] text-[#4338ca] font-bold px-1.5 py-0.5 rounded">
+                  Company
+                </span>
+              </button>
 
-              {/* Interface 1: Job Sources */}
+              {/* Stitch Interface: Job Sources */}
               <button 
                 onClick={() => { setActiveScreen('JOB_SOURCES'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -244,12 +268,10 @@ export default function App() {
                   <span className="material-symbols-outlined text-[17px]">hub</span>
                   <span>Job Sources</span>
                 </div>
-                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#0f766e] font-bold px-1.5 py-0.5 rounded">
-                  14 Portals
-                </span>
+                <span className="text-[10px] font-mono text-[#64748b]">12 Portals</span>
               </button>
 
-              {/* Interface 2: Check for Jobs */}
+              {/* Stitch Interface: Check for Jobs */}
               <button 
                 onClick={() => { setActiveScreen('CHECK_JOBS'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -265,7 +287,7 @@ export default function App() {
                 <span className="w-2 h-2 rounded-full bg-[#0f766e] animate-pulse"></span>
               </button>
 
-              {/* Interface 3: Recently Found */}
+              {/* Stitch Interface: Recently Found */}
               <button 
                 onClick={() => { setActiveScreen('RECENTLY_FOUND'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
@@ -279,12 +301,71 @@ export default function App() {
                   <span>Recently Found</span>
                 </div>
                 <span className="text-[10px] font-mono bg-[#eef2ff] text-[#4338ca] font-bold px-1.5 py-0.5 rounded">
-                  48 New
+                  Verified
                 </span>
               </button>
             </div>
 
-            {/* Group: PROFILE & PREFERENCES */}
+            {/* Group: JOB ARCHITECTURE & FIT */}
+            <div className="flex flex-col gap-1">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
+                FIT &amp; ARCHITECTURE
+              </span>
+
+              {/* Stitch Interface 3: Job Details & Fit Analysis */}
+              <button 
+                onClick={() => { setActiveScreen('JOB_DETAILS'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'JOB_DETAILS'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">badge</span>
+                  <span>Job Details &amp; Fit</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.5 rounded">
+                  88% Fit
+                </span>
+              </button>
+
+              {/* Stitch Interface 4: Eligibility & Match Explanation */}
+              <button 
+                onClick={() => { setActiveScreen('ELIGIBILITY_EXPLANATION'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'ELIGIBILITY_EXPLANATION'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">psychology</span>
+                  <span>Eligibility Matrix</span>
+                </div>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
+              </button>
+
+              {/* Stitch Interface 5: States & Feedback Library */}
+              <button 
+                onClick={() => { setActiveScreen('STATES_FEEDBACK'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'STATES_FEEDBACK'
+                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">layers</span>
+                  <span>States &amp; Feedback</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#fef3c7] text-[#b45309] font-bold px-1.5 py-0.5 rounded">
+                  Library
+                </span>
+              </button>
+            </div>
+
+            {/* Group: CANDIDATE CALIBRATION */}
             <div className="flex flex-col gap-1">
               <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
                 CANDIDATE CALIBRATION
@@ -300,7 +381,7 @@ export default function App() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">badge</span>
+                  <span className="material-symbols-outlined text-[17px]">account_circle</span>
                   <span>Profile Overview</span>
                 </div>
                 <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#0f766e] font-bold px-1.5 py-0.5 rounded">
@@ -345,41 +426,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Group: INTELLIGENCE */}
-            <div className="flex flex-col gap-1">
-              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
-                INTELLIGENCE
-              </span>
-
-              <button 
-                onClick={() => { setIsResumeModalOpen(true); setIsMobileMenuOpen(false); }}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">description</span>
-                  <span>Master Resume</span>
-                </div>
-                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.2 rounded">
-                  88%
-                </span>
-              </button>
-
-              <button 
-                onClick={() => { setActiveScreen('JOB_DETAILS'); setIsMobileMenuOpen(false); }}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
-                  activeScreen === 'JOB_DETAILS'
-                    ? 'bg-[#eef2ff] text-[#4338ca] font-bold'
-                    : 'hover:bg-[#f8fafc] text-[#334155]'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">psychology</span>
-                  <span>AI Match Breakdown</span>
-                </div>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
-              </button>
-            </div>
-
           </div>
 
           {/* Footer Candidate Status Bar */}
@@ -415,8 +461,11 @@ export default function App() {
               <span>/</span>
               <span className="font-bold text-[#0f172a]">
                 {activeScreen === 'OVERVIEW' && 'Executive Workspace'}
-                {activeScreen === 'FIND_JOBS' && 'Verified Opportunities'}
+                {activeScreen === 'FIND_JOBS' && 'Verified Opportunities (Discovery)'}
+                {activeScreen === 'SEARCH_FILTER' && 'Search & Filter Jobs (Company Search)'}
                 {activeScreen === 'JOB_DETAILS' && 'Job Architecture & Fit'}
+                {activeScreen === 'ELIGIBILITY_EXPLANATION' && 'Eligibility & Match Matrix'}
+                {activeScreen === 'STATES_FEEDBACK' && 'State Library & System Feedback'}
                 {activeScreen === 'MY_PROFILE' && 'Candidate Overview'}
                 {activeScreen === 'EDIT_PROFILE' && 'Edit Profile'}
                 {activeScreen === 'JOB_PREFERENCES' && 'Role & Target Calibration'}
@@ -440,11 +489,11 @@ export default function App() {
 
             {/* Notification Bell */}
             <button 
-              onClick={() => setIsNotificationOpen(true)}
-              className="relative p-1.5 text-[#64748b] hover:text-[#0f172a] rounded-lg"
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              className="relative p-1.5 text-[#64748b] hover:text-[#0f172a] rounded-lg transition"
             >
               <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#dc2626]"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4338ca] absolute top-1.5 right-1.5"></span>
             </button>
 
             {/* Avatar Pill */}
@@ -469,14 +518,46 @@ export default function App() {
             />
           )}
 
+          {/* Stitch Interface 1: Find Jobs (Discovery Dashboard) */}
           {activeScreen === 'FIND_JOBS' && (
-            <FindJobsPage onSelectJob={navigateToJob} />
+            <FindJobsPage 
+              onSelectJob={navigateToJob} 
+              onNavigateToSearchFilter={() => setActiveScreen('SEARCH_FILTER')}
+              onNavigateToEligibility={navigateToEligibility}
+            />
           )}
 
+          {/* Stitch Interface 2: Search & Filter Jobs (Software IT Company Search) */}
+          {activeScreen === 'SEARCH_FILTER' && (
+            <SearchFilterJobsPage 
+              onSelectJob={navigateToJob}
+              onNavigateToEligibility={navigateToEligibility}
+            />
+          )}
+
+          {/* Stitch Interface 3: Job Details & Fit Analysis */}
           {activeScreen === 'JOB_DETAILS' && (
             <JobDetailsPage 
               jobId={selectedJobId} 
               onBack={() => setActiveScreen('FIND_JOBS')} 
+              onNavigateToEligibility={navigateToEligibility}
+            />
+          )}
+
+          {/* Stitch Interface 4: Eligibility & Match Explanation */}
+          {activeScreen === 'ELIGIBILITY_EXPLANATION' && (
+            <EligibilityExplanationPage 
+              jobId={selectedJobId}
+              onBack={() => setActiveScreen('JOB_DETAILS')}
+              onSelectJob={navigateToJob}
+            />
+          )}
+
+          {/* Stitch Interface 5: States & Feedback Library */}
+          {activeScreen === 'STATES_FEEDBACK' && (
+            <StatesAndFeedbackLibraryPage 
+              onNavigateToFindJobs={() => setActiveScreen('FIND_JOBS')}
+              onNavigateToSources={() => setActiveScreen('JOB_SOURCES')}
             />
           )}
 
@@ -584,59 +665,27 @@ export default function App() {
 
       {/* Drawer: Notifications */}
       {isNotificationOpen && (
-        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex justify-end">
-          <div className="bg-white w-full max-w-sm h-full shadow-2xl border-l border-[#e2e8f0] flex flex-col justify-between p-5 animate-fade-in">
-            <div>
-              <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3 mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[20px] text-[#4338ca]">notifications</span>
-                  <h3 className="font-bold text-sm text-[#0f172a]">Operational Alerts (3)</h3>
-                </div>
-                <button onClick={() => setIsNotificationOpen(false)} className="text-[#94a3b8] hover:text-[#0f172a]">
-                  <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-3 text-xs">
-                <div className="p-3 bg-[#fef2f2] border border-[#fecaca] rounded-lg flex flex-col gap-1">
-                  <div className="flex justify-between font-mono font-bold text-[#dc2626]">
-                    <span>WALK-IN ALERT</span>
-                    <span>15m ago</span>
-                  </div>
-                  <p className="text-[#334155]">
-                    ThoughtWorks Hyderabad Walk-in Drive confirmed for March 15 at Ascendas IT Park.
-                  </p>
-                </div>
-
-                <div className="p-3 bg-[#ecfdf5] border border-[#a7f3d0] rounded-lg flex flex-col gap-1">
-                  <div className="flex justify-between font-mono font-bold text-[#059669]">
-                    <span>NEW HIGH MATCH (94%)</span>
-                    <span>1h ago</span>
-                  </div>
-                  <p className="text-[#334155]">
-                    Razorpay Graduate Software Engineer (₹14.0 LPA) ingested via Greenhouse. Zero fees verified.
-                  </p>
-                </div>
-
-                <div className="p-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg flex flex-col gap-1">
-                  <div className="flex justify-between font-mono font-bold text-[#64748b]">
-                    <span>CRAWLER HEALTH</span>
-                    <span>3h ago</span>
-                  </div>
-                  <p className="text-[#334155]">
-                    All 42 scrapers active across Indian IT hubs with 100% crawl validity.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <button 
-              onClick={() => setIsNotificationOpen(false)}
-              className="w-full py-2 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#334155] rounded-lg text-xs font-semibold font-mono transition"
-            >
-              Close Alerts
-            </button>
+        <div className="fixed top-14 right-4 sm:right-6 w-80 bg-white border border-[#e2e8f0] rounded-2xl shadow-xl z-50 p-4 flex flex-col gap-3 animate-scale-up">
+          <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-2">
+            <span className="text-xs font-bold font-mono text-[#0f172a] uppercase">Real-Time Telemetry</span>
+            <span className="text-[10px] font-mono text-[#059669] font-bold">4 Feeds Active</span>
           </div>
+          <div className="flex flex-col gap-2 text-xs">
+            <div className="p-2 rounded-lg bg-[#f0fdf4] border border-[#bbf7d0]">
+              <div className="font-bold text-[#15803d]">Thoughtworks ATS Ingested</div>
+              <div className="text-[11px] text-[#166534]">Graduate SWE (₹8.5 LPA) passed all 5 mandatory eligibility rules.</div>
+            </div>
+            <div className="p-2 rounded-lg bg-[#f8fafc] border border-[#e2e8f0]">
+              <div className="font-bold text-[#334155]">Swiggy Tech Careers Ingested</div>
+              <div className="text-[11px] text-[#64748b]">Associate Software Engineer 2025 batch verified with zero bond.</div>
+            </div>
+          </div>
+          <button 
+            onClick={() => setIsNotificationOpen(false)}
+            className="w-full py-1.5 rounded-lg bg-[#f1f5f9] text-[#475569] text-xs font-mono hover:bg-[#e2e8f0]"
+          >
+            Close Feed
+          </button>
         </div>
       )}
 

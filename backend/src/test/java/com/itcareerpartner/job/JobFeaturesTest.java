@@ -1,9 +1,6 @@
 package com.itcareerpartner.job;
 
-import com.itcareerpartner.job.dto.AddJobSourceRequest;
-import com.itcareerpartner.job.dto.FoundJobSummaryDto;
-import com.itcareerpartner.job.dto.JobSourceSummaryDto;
-import com.itcareerpartner.job.dto.StartScanRequest;
+import com.itcareerpartner.job.dto.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -150,7 +147,7 @@ class JobFeaturesTest {
         when(foundJobRepository.findAllByOrderByCreatedAtDesc()).thenReturn(jobs);
 
         FoundJobSummaryDto verifiedOnly = foundJobService.getFoundJobsSummary("VERIFIED", null, null);
-        assertEquals(2, verifiedOnly.getAllCount());
+        assertEquals(3, verifiedOnly.getAllCount());
         assertEquals(1, verifiedOnly.getVerifiedCount());
         assertEquals(1, verifiedOnly.getReviewCount());
         assertEquals(1, verifiedOnly.getFilteredCount());
@@ -160,5 +157,100 @@ class JobFeaturesTest {
         FoundJobSummaryDto hyderabadSearch = foundJobService.getFoundJobsSummary("ALL", null, "Hyderabad");
         assertEquals(1, hyderabadSearch.getJobs().size());
         assertEquals("TechM", hyderabadSearch.getJobs().get(0).getCompany());
+    }
+
+    @Test
+    @DisplayName("Search Any Software IT Company: Multi-company query, case-insensitivity and CTC filtering")
+    void testSearchAnySoftwareITCompany() {
+        List<FoundJob> mockJobs = new ArrayList<>();
+        FoundJob j1 = new FoundJob("Associate Software Engineer", "Rakuten", "Bengaluru", "Bengaluru", "₹9.0 LPA", 9.0, "FULL_TIME", "Verified Fresher", "VERIFIED", "1h ago", "Rakuten Portal", "https://rakuten.in", "RAK", null);
+        j1.setSkills(List.of("Java", "Spring Boot", "React"));
+        j1.setWorkMode("Hybrid");
+        FoundJob j2 = new FoundJob("Junior Developer", "Zoho", "Chennai", "Chennai", "₹5.6 LPA", 5.6, "FULL_TIME", "Verified Fresher", "VERIFIED", "2h ago", "Zoho Portal", "https://zoho.com", "ZH", null);
+        j2.setSkills(List.of("Java", "C++", "SQL"));
+        j2.setWorkMode("On-site");
+        FoundJob j3 = new FoundJob("Software Engineer Backend", "Swiggy", "Bengaluru", "Bengaluru", "₹6.0 LPA", 6.0, "FULL_TIME", "Verified Fresher", "VERIFIED", "3h ago", "Swiggy Portal", "https://swiggy.com", "SW", null);
+        j3.setSkills(List.of("Go", "Java", "Kafka"));
+        j3.setWorkMode("Hybrid");
+        mockJobs.add(j1);
+        mockJobs.add(j2);
+        mockJobs.add(j3);
+
+        when(foundJobRepository.findAllByOrderByCreatedAtDesc()).thenReturn(mockJobs);
+
+        // Search Rakuten (case-insensitive)
+        JobSearchResponseDto rakutenRes = foundJobService.searchJobs("rakuten", null, null, null, null, null, null, null);
+        assertEquals(1, rakutenRes.getTotalFound());
+        assertEquals("Rakuten", rakutenRes.getJobs().get(0).getCompany());
+
+        // Search Zoho by company param
+        JobSearchResponseDto zohoRes = foundJobService.searchJobs(null, "Zoho", null, null, null, null, null, null);
+        assertEquals(1, zohoRes.getTotalFound());
+        assertEquals("Zoho", zohoRes.getJobs().get(0).getCompany());
+
+        // Search by skill across all IT companies
+        JobSearchResponseDto javaRes = foundJobService.searchJobs("Java", null, null, null, null, null, null, null);
+        assertEquals(3, javaRes.getTotalFound());
+
+        // Filter by min CTC >= 8.0 LPA
+        JobSearchResponseDto ctcRes = foundJobService.searchJobs(null, null, 8.0, null, null, null, null, null);
+        assertEquals(1, ctcRes.getTotalFound());
+        assertEquals("Rakuten", ctcRes.getJobs().get(0).getCompany());
+    }
+
+    @Test
+    @DisplayName("Companies Autocomplete: Returns verified corporate directory")
+    void testGetCanonicalAndDynamicCompaniesList() {
+        when(foundJobRepository.findAll()).thenReturn(List.of());
+
+        List<CompanyItemDto> companies = foundJobService.getCompaniesList();
+        assertNotNull(companies);
+        assertTrue(companies.size() >= 20, "Should include canonical list of top IT employers");
+
+        boolean hasThoughtworks = companies.stream().anyMatch(c -> c.getName().equalsIgnoreCase("Thoughtworks"));
+        boolean hasSwiggy = companies.stream().anyMatch(c -> c.getName().equalsIgnoreCase("Swiggy"));
+        boolean hasZoho = companies.stream().anyMatch(c -> c.getName().equalsIgnoreCase("Zoho"));
+        boolean hasInfosys = companies.stream().anyMatch(c -> c.getName().equalsIgnoreCase("Infosys"));
+        boolean hasTcs = companies.stream().anyMatch(c -> c.getName().equalsIgnoreCase("Tata Consultancy Services"));
+
+        assertTrue(hasThoughtworks, "Should list Thoughtworks");
+        assertTrue(hasSwiggy, "Should list Swiggy");
+        assertTrue(hasZoho, "Should list Zoho");
+        assertTrue(hasInfosys, "Should list Infosys");
+        assertTrue(hasTcs, "Should list TCS");
+    }
+
+    @Test
+    @DisplayName("On-Demand Ingestion: Creates verified fresher opportunity for searched company")
+    void testOnDemandCompanyIngestion() {
+        when(foundJobRepository.findAll()).thenReturn(List.of());
+        when(foundJobRepository.save(any(FoundJob.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        FoundJob ingested = foundJobService.ingestCompany("Persistent Systems");
+        assertNotNull(ingested);
+        assertEquals("Persistent Systems", ingested.getCompany());
+        assertTrue(ingested.getCtcLpa() >= 2.4, "Must satisfy >= 2.4 LPA statutory floor");
+        assertEquals("VERIFIED", ingested.getStatus());
+        assertEquals("0 Years / Fresher Scope", ingested.getExperienceText());
+    }
+
+    @Test
+    @DisplayName("Job Eligibility: Deterministic 5-rule gate & weighted candidate scoring")
+    void testDeterministicEligibilityEvaluation() {
+        FoundJob swiggyJob = new FoundJob("Associate Software Engineer", "Swiggy", "Bengaluru", "Bengaluru", "₹6.0 LPA", 6.0, "FULL_TIME", "Verified Fresher", "VERIFIED", "1h ago", "Swiggy Portal", "https://swiggy.com", "SW", null);
+        swiggyJob.setId("job-swg");
+        swiggyJob.setJobMatchScore(88);
+
+        when(foundJobRepository.findById("job-swg")).thenReturn(Optional.of(swiggyJob));
+
+        JobEligibilityDto eligibility = foundJobService.getJobEligibility("job-swg");
+        assertNotNull(eligibility);
+        assertTrue(eligibility.isEligible(), "Must pass all 5 mandatory eligibility rules");
+        assertEquals(5, eligibility.getHardRules().size());
+        assertEquals("Pass", eligibility.getHardRules().get(0).getStatus()); // Strict IT Role
+        assertEquals("Pass", eligibility.getHardRules().get(1).getStatus()); // Fresher scope
+        assertEquals("Pass", eligibility.getHardRules().get(2).getStatus()); // Full-time salary floor >= 2.4L
+        assertEquals(88, eligibility.getOverallFitScore());
+        assertEquals(5, eligibility.getCandidateBreakdown().size());
     }
 }

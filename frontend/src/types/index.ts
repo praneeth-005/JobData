@@ -162,13 +162,24 @@ export interface DiscoveryScan {
 // Stitch Interface 3: Recently Found Jobs Types
 export interface FoundJob {
   id: string;
+  jobCode?: string;
   title: string;
   company: string;
   location: string;
   city?: string;
   ctcText: string;
   ctcLpa?: number;
+  fixedBase?: string;
   jobType: 'FULL_TIME' | 'INTERNSHIP' | 'TRAINEE';
+  workMode?: string;
+  interviewMode?: string;
+  batchAllowed?: string;
+  experienceText?: string;
+  roleCategory?: string;
+  bondText?: string;
+  jobMatchScore?: number;
+  resumeMatchScore?: number;
+  skills?: string[];
   tag: string;
   status: 'VERIFIED' | 'REVIEW' | 'FILTERED';
   foundTimeText: string;
@@ -177,6 +188,8 @@ export interface FoundJob {
   logoText: string;
   cautionNotice?: string;
   filterReason?: string;
+  description?: string;
+  aboutCompany?: string;
   isSaved?: boolean;
 }
 
@@ -186,4 +199,45 @@ export interface FoundJobSummary {
   reviewCount: number;
   filteredCount: number;
   jobs: FoundJob[];
+}
+
+// Stitch 5 Interfaces New Types
+export interface CompanyItem {
+  name: string;
+  logoText: string;
+  openingsCount: number;
+  avgSalaryText: string;
+  category: string;
+  isVerified: boolean;
+  website: string;
+}
+
+export interface RuleEvaluation {
+  ruleNumber: number;
+  ruleName: string;
+  status: 'Pass' | 'N/A' | 'Fail';
+  detail: string;
+}
+
+export interface FactorBreakdown {
+  factorName: string;
+  weightPercent: number;
+  matchPercent: number;
+  description: string;
+  icon: string;
+}
+
+export interface JobEligibility {
+  jobId: string;
+  company: string;
+  title: string;
+  ctcText: string;
+  ctcLpa: number;
+  overallFitScore: number;
+  fitRank: string;
+  isEligible: boolean;
+  auditHash: string;
+  negativeContrastAlert: string;
+  hardRules: RuleEvaluation[];
+  candidateBreakdown: FactorBreakdown[];
 }

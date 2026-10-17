@@ -1,652 +1,712 @@
-import React, { useState } from 'react';
-import { EXACT_JOBS } from '../data/mockJobs';
+import React, { useState, useEffect } from 'react';
+import { FoundJob, CompanyItem } from '../types';
 
 interface FindJobsPageProps {
   onSelectJob: (jobId: string) => void;
+  onNavigateToSearchFilter?: () => void;
+  onNavigateToEligibility?: (jobId: string) => void;
 }
 
-export default function FindJobsPage({ onSelectJob }: FindJobsPageProps) {
-  const [searchQuery, setSearchQuery] = useState('React, Go, QA Automation');
-  const [jobTypes, setJobTypes] = useState<string[]>(['FULL_TIME', 'INTERNSHIP']);
-  const [interviewModes, setInterviewModes] = useState<string[]>(['VIRTUAL']);
-  const [locations, setLocations] = useState<string[]>(['Hyderabad', 'Bengaluru']);
-  const [compensation, setCompensation] = useState<string[]>(['3.5-5', '5-12']);
-  const [sortBy, setSortBy] = useState('Highest Resume Match');
+export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, onNavigateToEligibility }: FindJobsPageProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState<string>('All');
+  const [workModeFilter, setWorkModeFilter] = useState<string>('All');
+  const [minCtcFilter, setMinCtcFilter] = useState<number>(2.4);
+  const [jobs, setJobs] = useState<FoundJob[]>([]);
+  const [companies, setCompanies] = useState<CompanyItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const toggleCheck = (list: string[], setList: React.Dispatch<React.SetStateAction<string[]>>, item: string) => {
-    if (list.includes(item)) setList(list.filter(x => x !== item));
-    else setList([...list, item]);
+  // Quick IT Company suggestion pills
+  const quickCompanies = [
+    'All',
+    'Thoughtworks',
+    'Swiggy',
+    'Razorpay',
+    'Zoho',
+    'PhonePe',
+    'Rakuten',
+    'Infosys',
+    'Tata Consultancy Services',
+    'Amazon'
+  ];
+
+  // Fetch verified companies for autocomplete
+  useEffect(() => {
+    fetch('/api/v1/jobs/companies')
+      .then(res => res.ok ? res.json() : null)
+      .then(json => {
+        if (json && json.data) {
+          setCompanies(json.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch jobs based on search & filters
+  const fetchJobs = () => {
+    setIsLoading(true);
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.append('q', searchQuery.trim());
+    if (selectedCompany !== 'All') params.append('company', selectedCompany);
+    if (workModeFilter !== 'All') params.append('workMode', workModeFilter);
+    if (minCtcFilter > 2.4) params.append('minCtc', minCtcFilter.toString());
+
+    fetch(`/api/v1/jobs/search?${params.toString()}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(json => {
+        if (json && json.data && json.data.jobs) {
+          setJobs(json.data.jobs);
+        } else {
+          loadFallbackJobs();
+        }
+        setIsLoading(false);
+      })
+      .catch(() => {
+        loadFallbackJobs();
+        setIsLoading(false);
+      });
   };
 
-  const resetAll = () => {
-    setJobTypes([]);
-    setInterviewModes([]);
-    setLocations([]);
-    setCompensation([]);
-    setSearchQuery('');
+  const loadFallbackJobs = () => {
+    // Rich fallback dataset ensuring immediate responsiveness even before network completes
+    const fallback: FoundJob[] = [
+      {
+        id: 'job-tw',
+        jobCode: 'TW-GRAD-2025',
+        title: 'Graduate Software Engineer (Java / Backend)',
+        company: 'Thoughtworks',
+        location: 'Bengaluru • Hybrid',
+        city: 'Bengaluru',
+        ctcText: '₹8.5 LPA (Confirmed)',
+        ctcLpa: 8.5,
+        fixedBase: 'Fixed Base: ₹8.00 LPA',
+        jobType: 'FULL_TIME',
+        workMode: 'Hybrid',
+        interviewMode: 'VIRTUAL',
+        batchAllowed: '2024 / 2025',
+        experienceText: '0 Years / Fresher Scope',
+        roleCategory: 'Distributed Microservices',
+        bondText: 'Zero Bond / No Service Agreement',
+        jobMatchScore: 94,
+        resumeMatchScore: 88,
+        skills: ['Java 21', 'Spring Boot', 'PostgreSQL', 'Docker', 'Clean Architecture'],
+        tag: 'Verified Fresher',
+        status: 'VERIFIED',
+        foundTimeText: '15 mins ago',
+        sourceName: 'Thoughtworks Official Career Page',
+        applyUrl: 'https://thoughtworks.com/careers',
+        logoText: 'TW',
+        description: 'Thoughtworks is seeking ambitious Graduate Software Engineers to join our global engineering collective.',
+        aboutCompany: 'Thoughtworks is a leading global technology consultancy.'
+      },
+      {
+        id: 'job-swg',
+        jobCode: 'SWG-2025-ASE',
+        title: 'Associate Software Engineer - 2025 Batch',
+        company: 'Swiggy',
+        location: 'Bengaluru • Hybrid',
+        city: 'Bengaluru',
+        ctcText: '₹6.0 LPA (Fixed Gross)',
+        ctcLpa: 6.0,
+        fixedBase: 'Fixed Base: ₹5.50 LPA',
+        jobType: 'FULL_TIME',
+        workMode: 'Hybrid',
+        interviewMode: 'VIRTUAL',
+        batchAllowed: '2024 / 2025',
+        experienceText: '0 Years (Fresher)',
+        roleCategory: 'Hyperlocal Logistics Engine',
+        bondText: 'Zero Bond Guarantee',
+        jobMatchScore: 88,
+        resumeMatchScore: 85,
+        skills: ['Go / Golang', 'Java', 'Kafka', 'Redis', 'Distributed Systems'],
+        tag: 'Verified Fresher',
+        status: 'VERIFIED',
+        foundTimeText: '30 mins ago',
+        sourceName: 'Swiggy Careers Direct ATS',
+        applyUrl: 'https://swiggy.com/careers/engineering',
+        logoText: 'SW',
+        description: 'Build and scale high-concurrency order dispatching services processing millions of real-time transactions daily.',
+        aboutCompany: 'Swiggy is India\'s leading on-demand convenience platform.'
+      },
+      {
+        id: 'job-rzp',
+        jobCode: 'RZP-2025-089',
+        title: 'Graduate Software Engineer (Payments Core)',
+        company: 'Razorpay',
+        location: 'Bengaluru (Hybrid)',
+        city: 'Bengaluru',
+        ctcText: '₹14.0 LPA (Confirmed)',
+        ctcLpa: 14.0,
+        fixedBase: 'Fixed Base: ₹12.50 LPA',
+        jobType: 'FULL_TIME',
+        workMode: 'Hybrid',
+        interviewMode: 'VIRTUAL',
+        batchAllowed: '2024 / 2025',
+        experienceText: '0 Years / Fresher Scope',
+        roleCategory: 'Core Payments Engine',
+        bondText: 'Zero Bond Guarantee',
+        jobMatchScore: 92,
+        resumeMatchScore: 86,
+        skills: ['Go / Golang', 'Java 17', 'Distributed Systems', 'Kafka', 'MySQL'],
+        tag: 'Verified Fresher',
+        status: 'VERIFIED',
+        foundTimeText: '45 mins ago',
+        sourceName: 'Razorpay Engineering Portal',
+        applyUrl: 'https://razorpay.com/careers',
+        logoText: 'RZP',
+        description: 'Build resilient fintech infrastructure powering India\'s largest payment gateway.',
+        aboutCompany: 'Razorpay powers digital payments across India.'
+      },
+      {
+        id: 'job-rak',
+        jobCode: 'RAK-2025-ASE',
+        title: 'Associate Software Engineer',
+        company: 'Rakuten',
+        location: 'Bengaluru • Hybrid',
+        city: 'Bengaluru',
+        ctcText: '₹9.0 LPA (Confirmed)',
+        ctcLpa: 9.0,
+        fixedBase: 'Fixed Base: ₹8.40 LPA',
+        jobType: 'FULL_TIME',
+        workMode: 'Hybrid',
+        interviewMode: 'VIRTUAL',
+        batchAllowed: '2024 / 2025',
+        experienceText: '0 Years / Fresher Scope',
+        roleCategory: 'Global E-Commerce Services',
+        bondText: 'Zero Bond Guarantee',
+        jobMatchScore: 90,
+        resumeMatchScore: 89,
+        skills: ['Java', 'Spring Cloud', 'React', 'AWS', 'Docker'],
+        tag: 'Verified Fresher',
+        status: 'VERIFIED',
+        foundTimeText: '2 hours ago',
+        sourceName: 'Rakuten India Careers',
+        applyUrl: 'https://rakuten.in/careers',
+        logoText: 'RAK',
+        description: 'Rakuten India development center builds internet services and e-commerce platforms for 1.6 billion members.',
+        aboutCompany: 'Rakuten Group is a global internet leader.'
+      },
+      {
+        id: 'job-zh',
+        jobCode: 'ZH-2025-DEV',
+        title: 'Junior Full-Stack Developer',
+        company: 'Zoho',
+        location: 'Chennai / Tenkasi • On-site',
+        city: 'Chennai',
+        ctcText: '₹5.6 LPA (Confirmed)',
+        ctcLpa: 5.6,
+        fixedBase: 'Fixed Base: ₹5.20 LPA',
+        jobType: 'FULL_TIME',
+        workMode: 'On-site',
+        interviewMode: 'WALK_IN',
+        batchAllowed: '2024 / 2025 / 2026',
+        experienceText: '0 Years / Entry-Level',
+        roleCategory: 'Cloud SaaS Applications',
+        bondText: 'Zero Bond Guarantee',
+        jobMatchScore: 85,
+        resumeMatchScore: 82,
+        skills: ['Java', 'JavaScript', 'C++', 'Data Structures', 'PostgreSQL'],
+        tag: 'Verified Fresher',
+        status: 'VERIFIED',
+        foundTimeText: '1 hour ago',
+        sourceName: 'Zoho Corporation Career Portal',
+        applyUrl: 'https://zoho.com/careers',
+        logoText: 'ZH',
+        description: 'Work directly on Zoho Office Suite and CRM engines with ownership from day one.',
+        aboutCompany: 'Zoho crafts business software for 100M+ users.'
+      },
+      {
+        id: 'job-infy',
+        jobCode: 'INF-SP-2025',
+        title: 'Specialist Programmer - Java Track',
+        company: 'Infosys',
+        location: 'Mysuru / Bengaluru • Hybrid',
+        city: 'Bengaluru',
+        ctcText: '₹9.5 LPA (Confirmed)',
+        ctcLpa: 9.5,
+        fixedBase: 'Fixed Base: ₹9.00 LPA',
+        jobType: 'FULL_TIME',
+        workMode: 'Hybrid',
+        interviewMode: 'VIRTUAL',
+        batchAllowed: '2024 / 2025',
+        experienceText: '0 Years / Fresher Scope',
+        roleCategory: 'High-End Complex Architecture & AI',
+        bondText: 'Zero Bond Guarantee',
+        jobMatchScore: 93,
+        resumeMatchScore: 88,
+        skills: ['Java', 'Algorithms', 'Spring Boot', 'Microservices', 'PostgreSQL'],
+        tag: 'Verified Fresher',
+        status: 'VERIFIED',
+        foundTimeText: '4 hours ago',
+        sourceName: 'Infosys Launchpad Hub',
+        applyUrl: 'https://infosys.com/careers',
+        logoText: 'INF',
+        description: 'Elite coding cadre inside Infosys focused on building core engines and enterprise architectures.',
+        aboutCompany: 'Infosys is a global leader in next-generation digital services.'
+      }
+    ];
+
+    // Filter fallback
+    const filtered = fallback.filter(j => {
+      if (selectedCompany !== 'All' && !j.company.toLowerCase().includes(selectedCompany.toLowerCase())) return false;
+      if (workModeFilter !== 'All' && j.workMode !== workModeFilter) return false;
+      if (minCtcFilter > 2.4 && (j.ctcLpa || 0) < minCtcFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesComp = j.company.toLowerCase().includes(q);
+        const matchesTitle = j.title.toLowerCase().includes(q);
+        const matchesSkill = j.skills?.some(s => s.toLowerCase().includes(q));
+        if (!matchesComp && !matchesTitle && !matchesSkill) return false;
+      }
+      return true;
+    });
+
+    setJobs(filtered);
   };
+
+  useEffect(() => {
+    fetchJobs();
+  }, [searchQuery, selectedCompany, workModeFilter, minCtcFilter]);
 
   const toggleSave = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    fetch(`/api/v1/jobs/${id}/save`, { method: 'POST' })
+      .catch(() => {});
+
     setSavedJobs(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+        showToast('Job removed from Saved Collection');
+      } else {
+        next.add(id);
+        showToast('Opportunity saved successfully to your Saved Jobs!');
+      }
       return next;
     });
   };
 
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   return (
-    <div className="w-full max-w-[1240px] mx-auto px-6 py-6 font-sans">
+    <div className="w-full max-w-[1300px] mx-auto px-4 sm:px-6 py-6 font-sans">
       
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-20 right-6 z-50 bg-[#1e1b4b] text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-mono border border-indigo-400/30 animate-in fade-in slide-in-from-top-4">
+          <span className="material-symbols-outlined text-[18px] text-[#10b981]">check_circle</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Top Header Section */}
-      <div className="flex flex-col gap-1 mb-5">
-        <div className="text-[11px] font-mono tracking-wider text-[#059669] font-bold uppercase flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
-          <span>ZERO BOND GUARANTEE • 0 Years Exp • Verified CTC</span>
+      <div className="flex flex-col gap-1.5 mb-6">
+        <div className="text-[11px] font-mono tracking-wider text-[#059669] font-bold uppercase flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
+          <span>ZERO BOND GUARANTEE • 0-1 YEARS EXP ONLY • STATUTORY ₹2.4 LPA FLOOR</span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#0f172a] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#0f172a] tracking-tight">
               Find Verified IT Jobs
             </h1>
-            <p className="text-xs text-[#64748b] mt-0.5">
-              Curated opportunities strictly matched with freshers, verified compensation, and direct application channels.
+            <p className="text-xs sm:text-sm text-[#64748b] mt-1 max-w-2xl leading-relaxed">
+              Curated software opportunities verified with freshers, guaranteed compensation floors, zero service agreements, and direct ATS ingress.
             </p>
           </div>
 
-          <div className="flex items-center gap-4 bg-white px-3.5 py-1.5 rounded-lg border border-[#e2e8f0] text-xs font-mono shrink-0 shadow-2xs">
-            <div className="flex items-center gap-1.5 text-[#059669] font-semibold">
+          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-[#e2e8f0] text-xs font-mono shrink-0 shadow-xs">
+            <div className="flex items-center gap-1.5 text-[#059669] font-bold">
               <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
-              <span>34 Live Openings</span>
+              <span>{jobs.length} Verified Roles</span>
             </div>
             <div className="h-4 w-[1px] bg-[#e2e8f0]"></div>
-            <span className="text-[#64748b]">Synced 3m ago</span>
+            <button 
+              onClick={onNavigateToSearchFilter}
+              className="text-[#4338ca] hover:text-[#3730a3] font-bold flex items-center gap-1 hover:underline cursor-pointer"
+            >
+              <span>Advanced Search Matrix</span>
+              <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Big Search Input with Trending tags */}
-      <div className="bg-white rounded-xl border border-[#e2e8f0] p-4 mb-6 shadow-2xs flex flex-col gap-2.5">
+      {/* Main IT Company Search Bar */}
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] p-4 sm:p-5 mb-6 shadow-xs flex flex-col gap-3.5">
+        
+        {/* Search Input Box */}
         <div className="relative flex items-center">
-          <span className="material-symbols-outlined text-[18px] text-[#94a3b8] absolute left-3">
+          <span className="material-symbols-outlined text-[22px] text-[#4338ca] absolute left-3.5 pointer-events-none">
             search
           </span>
           <input 
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search roles, companies, tech stacks..."
-            className="w-full h-10 pl-9 pr-20 bg-[#f8fafc] rounded-lg text-xs text-[#0f172a] placeholder-[#94a3b8] border border-[#e2e8f0] focus:outline-none focus:border-[#4338ca] font-medium"
+            placeholder="Search ANY software IT company (e.g. Swiggy, Thoughtworks, Rakuten, Infosys, Zoho, TCS, Razorpay, PhonePe...)"
+            className="w-full pl-11 pr-24 py-3 bg-[#faf8ff] text-sm text-[#0f172a] placeholder-[#94a3b8] rounded-xl border border-[#cbd5e1] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4338ca] focus:border-[#4338ca] transition font-medium"
           />
           {searchQuery && (
             <button 
               onClick={() => setSearchQuery('')}
-              className="absolute right-12 text-[#94a3b8] hover:text-[#0f172a] text-xs font-mono"
+              className="absolute right-12 text-[#94a3b8] hover:text-[#0f172a] p-1 text-xs font-mono"
             >
               ✕
             </button>
           )}
-          <kbd className="absolute right-3 text-[10px] font-mono bg-white border border-[#e2e8f0] text-[#64748b] px-1.5 py-0.5 rounded pointer-events-none">
-            ⌘F
-          </kbd>
+          <span className="absolute right-3.5 text-[11px] font-mono text-[#94a3b8] hidden sm:inline">
+            LIVE SEARCH
+          </span>
         </div>
 
-        {/* Trending tags row */}
-        <div className="flex items-center gap-1.5 flex-wrap text-xs">
-          <span className="text-[11px] font-mono text-[#64748b] mr-1">Trending:</span>
-          {['Spring Boot', 'Golang', 'SDET / QA', 'AWS', 'Next.js'].map(tag => (
-            <button 
-              key={tag}
-              onClick={() => setSearchQuery(tag)}
-              className="px-2.5 py-0.5 rounded-full bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#334155] text-[11px] font-mono transition"
-            >
-              {tag}
-            </button>
-          ))}
+        {/* Quick Company Suggestion Pills Strip */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#64748b] flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[15px] text-[#4338ca]">apartment</span>
+              <span>Filter by Software IT Company:</span>
+            </span>
+            <span className="text-[11px] font-mono text-[#94a3b8] hidden sm:inline">
+              Click company to filter
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar flex-wrap sm:flex-nowrap">
+            {quickCompanies.map((comp) => {
+              const isSelected = selectedCompany === comp;
+              return (
+                <button
+                  key={comp}
+                  onClick={() => setSelectedCompany(comp)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${
+                    isSelected 
+                      ? 'bg-[#4338ca] text-white font-bold shadow-xs' 
+                      : 'bg-[#f1f5f9] text-[#334155] hover:bg-[#e2e8f0]'
+                  }`}
+                >
+                  {comp !== 'All' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  )}
+                  <span>{comp}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Secondary Filter Badges */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#f1f5f9]">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-mono text-[#64748b] text-[11px] font-bold">WORK MODE:</span>
+            {['All', 'Hybrid', 'Remote', 'On-site'].map(mode => (
+              <button
+                key={mode}
+                onClick={() => setWorkModeFilter(mode)}
+                className={`px-2.5 py-1 rounded-md text-xs transition ${
+                  workModeFilter === mode 
+                    ? 'bg-[#1e1b4b] text-white font-bold' 
+                    : 'bg-[#f8fafc] text-[#64748b] hover:bg-[#e2e8f0]'
+                }`}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-mono text-[#64748b] text-[11px] font-bold">MIN CTC:</span>
+            {[2.4, 6.0, 9.0, 12.0].map(val => (
+              <button
+                key={val}
+                onClick={() => setMinCtcFilter(val)}
+                className={`px-2.5 py-1 rounded-md text-xs font-mono transition ${
+                  minCtcFilter === val 
+                    ? 'bg-[#0f766e] text-white font-bold' 
+                    : 'bg-[#f8fafc] text-[#64748b] hover:bg-[#e2e8f0]'
+                }`}
+              >
+                ≥ ₹{val}L
+              </button>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Discovery Telemetry / Key Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-6">
+        <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#eef2ff] text-[#4338ca] flex items-center justify-center font-bold text-lg">
+            <span className="material-symbols-outlined text-[20px]">verified</span>
+          </div>
+          <div>
+            <div className="text-[11px] font-mono text-[#64748b] uppercase">Verified Roles</div>
+            <div className="text-lg font-bold text-[#0f172a]">{jobs.length} Active</div>
+          </div>
+        </div>
+
+        <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#ecfdf5] text-[#059669] flex items-center justify-center font-bold text-lg">
+            <span className="material-symbols-outlined text-[20px]">payments</span>
+          </div>
+          <div>
+            <div className="text-[11px] font-mono text-[#64748b] uppercase">Fresher Average</div>
+            <div className="text-lg font-bold text-[#0f172a]">₹8.40 LPA</div>
+          </div>
+        </div>
+
+        <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#fffbeb] text-[#b45309] flex items-center justify-center font-bold text-lg">
+            <span className="material-symbols-outlined text-[20px]">handshake</span>
+          </div>
+          <div>
+            <div className="text-[11px] font-mono text-[#64748b] uppercase">Zero Bond Compliance</div>
+            <div className="text-lg font-bold text-[#0f172a]">100% Certified</div>
+          </div>
+        </div>
+
+        <div className="bg-white p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#f8fafc] text-[#0284c7] flex items-center justify-center font-bold text-lg">
+            <span className="material-symbols-outlined text-[20px]">psychology</span>
+          </div>
+          <div>
+            <div className="text-[11px] font-mono text-[#64748b] uppercase">Candidate Alignment</div>
+            <div className="text-lg font-bold text-[#0f172a]">88% - 94% Fit</div>
+          </div>
         </div>
       </div>
 
-      {/* Results Header Bar */}
-      <div className="flex items-center justify-between text-xs text-[#64748b] mb-4">
-        <div className="font-medium">
-          Showing 34 verified openings
+      {/* Results Header */}
+      <div className="flex items-center justify-between mb-4 text-xs font-mono text-[#64748b]">
+        <div className="flex items-center gap-2">
+          <span>SHOWING:</span>
+          <span className="font-bold text-[#0f172a]">{jobs.length} Verified Fresher Openings</span>
+          {selectedCompany !== 'All' && (
+            <span className="bg-[#eef2ff] text-[#4338ca] px-2 py-0.5 rounded font-bold">
+              Company: {selectedCompany}
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-1.5">
-          <span>Sort by:</span>
-          <select 
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="bg-transparent font-medium text-[#0f172a] focus:outline-none cursor-pointer"
-          >
-            <option>Highest Resume Match</option>
-            <option>Highest CTC</option>
-            <option>Recently Ingested</option>
-          </select>
+        <div className="flex items-center gap-2">
+          <span>SORT BY:</span>
+          <span className="font-bold text-[#4338ca]">Highest Resume Match</span>
         </div>
       </div>
 
-      {/* Main 2-Column Grid: Filter Rail (Left) + Cards (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* Left Filter Rail (Cols 1-3.5) */}
-        <aside className="lg:col-span-3 bg-white rounded-xl border border-[#e8eaf6] p-4 shadow-2xs flex flex-col gap-5 text-xs">
-          
-          <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
-            <span className="font-bold text-[#0f172a] flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px] text-[#4338ca]">filter_alt</span>
-              Filters
-            </span>
+      {/* Job Cards Grid */}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-[#e2e8f0]">
+          <div className="w-10 h-10 rounded-full border-3 border-[#4338ca] border-t-transparent animate-spin mb-3"></div>
+          <p className="text-sm font-mono text-[#64748b]">Evaluating deterministic IT rules & filtering postings...</p>
+        </div>
+      ) : jobs.length === 0 ? (
+        /* Empty State with Action */
+        <div className="bg-white rounded-2xl border border-[#e2e8f0] p-8 text-center flex flex-col items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#f1f5f9] flex items-center justify-center text-[#64748b] mb-3">
+            <span className="material-symbols-outlined text-[32px]">filter_alt_off</span>
+          </div>
+          <h3 className="text-base font-bold text-[#0f172a]">No Openings Matched Your Criteria</h3>
+          <p className="text-xs text-[#64748b] mt-1 max-w-md">
+            No live openings found for “{searchQuery || selectedCompany}” with current filters. Try resetting company or lowering the salary threshold.
+          </p>
+          <div className="flex items-center gap-3 mt-4">
             <button 
-              onClick={resetAll}
-              className="text-[#4338ca] hover:underline font-medium text-[11px]"
+              onClick={() => { setSearchQuery(''); setSelectedCompany('All'); setMinCtcFilter(2.4); setWorkModeFilter('All'); }}
+              className="px-4 py-2 bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-lg text-xs font-mono font-medium transition"
             >
-              Reset all
+              Reset All Filters
             </button>
+            {onNavigateToSearchFilter && (
+              <button 
+                onClick={onNavigateToSearchFilter}
+                className="px-4 py-2 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#334155] rounded-lg text-xs font-mono font-medium transition"
+              >
+                Open Advanced Search
+              </button>
+            )}
           </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {jobs.map((job) => {
+            const isSaved = savedJobs.has(job.id);
+            const matchScore = job.jobMatchScore || 88;
+            return (
+              <div 
+                key={job.id}
+                onClick={() => onSelectJob(job.id)}
+                className="bg-white rounded-2xl border border-[#e2e8f0] hover:border-[#c7d2fe] p-5 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div>
+                  
+                  {/* Top Card Row */}
+                  <div className="flex items-start justify-between gap-3 mb-2.5">
+                    <div className="flex items-start gap-3 min-w-0">
+                      
+                      {/* Company Monogram Badge */}
+                      <div className="w-11 h-11 rounded-xl bg-[#0f172a] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs group-hover:bg-[#4338ca] transition-colors">
+                        {job.logoText || job.company.substring(0, 2).toUpperCase()}
+                      </div>
 
-          {/* Section: JOB TYPE */}
-          <div className="flex flex-col gap-2">
-            <span className="font-mono text-[10.5px] uppercase font-bold text-[#64748b] tracking-wider">
-              JOB TYPE
-            </span>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={jobTypes.includes('FULL_TIME')}
-                  onChange={() => toggleCheck(jobTypes, setJobTypes, 'FULL_TIME')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">Full-Time FTE</span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-bold text-[#4338ca] uppercase tracking-wide">
+                            {job.company}
+                          </span>
+                          <span className="text-[#cbd5e1]">•</span>
+                          <span className="text-[11px] font-mono text-[#64748b]">
+                            {job.foundTimeText || 'Recent'}
+                          </span>
+                        </div>
+                        <h2 className="text-sm sm:text-base font-bold text-[#0f172a] tracking-tight truncate group-hover:text-[#4338ca] transition-colors mt-0.5">
+                          {job.title}
+                        </h2>
+                      </div>
+                    </div>
+
+                    {/* Match Score Gauge */}
+                    <div className="flex flex-col items-end shrink-0">
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#059669] text-xs font-mono font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>
+                        <span>{matchScore}% Fit</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-[#94a3b8] mt-0.5">
+                        Tier 1 Rule Pass
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Compensation & Location Badges */}
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="px-2.5 py-1 rounded-lg bg-[#f0fdf4] text-[#15803d] border border-[#bbf7d0] text-xs font-mono font-bold flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">payments</span>
+                      <span>{job.ctcText}</span>
+                    </span>
+
+                    <span className="px-2.5 py-1 rounded-lg bg-[#f8fafc] text-[#334155] border border-[#e2e8f0] text-xs font-medium flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px] text-[#64748b]">location_on</span>
+                      <span>{job.location}</span>
+                    </span>
+
+                    <span className="px-2 py-1 rounded-lg bg-[#f1f5f9] text-[#475569] text-[11px] font-mono">
+                      {job.workMode || 'Hybrid'}
+                    </span>
+                  </div>
+
+                  {/* Bond & Fresher Status */}
+                  <div className="flex items-center gap-2 text-[11px] font-mono text-[#059669] mb-3">
+                    <span className="flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">verified_user</span>
+                      <span>{job.bondText || 'Zero Bond Guarantee'}</span>
+                    </span>
+                    <span>•</span>
+                    <span className="text-[#64748b]">
+                      {job.batchAllowed || '2024 / 2025'} Batch
+                    </span>
+                  </div>
+
+                  {/* Skills tags */}
+                  {job.skills && job.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {job.skills.slice(0, 4).map(skill => (
+                        <span key={skill} className="px-2 py-0.5 rounded bg-[#f1f5f9] text-[#334155] text-[11px] font-mono">
+                          {skill}
+                        </span>
+                      ))}
+                      {job.skills.length > 4 && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-mono text-[#94a3b8]">
+                          +{job.skills.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Bottom Action Footer */}
+                <div className="pt-3 border-t border-[#f1f5f9] flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => toggleSave(job.id, e)}
+                      className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 transition ${
+                        isSaved 
+                          ? 'bg-[#eef2ff] border-[#c7d2fe] text-[#4338ca] font-bold' 
+                          : 'bg-white border-[#e2e8f0] text-[#64748b] hover:text-[#0f172a]'
+                      }`}
+                      title="Save Job to Collection"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">
+                        {isSaved ? 'bookmark_added' : 'bookmark_border'}
+                      </span>
+                      <span className="hidden sm:inline">{isSaved ? 'Saved' : 'Save'}</span>
+                    </button>
+
+                    {onNavigateToEligibility && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNavigateToEligibility(job.id);
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg bg-[#faf8ff] hover:bg-[#eef2ff] text-[#4338ca] border border-[#e0e7ff] text-xs font-mono font-medium transition flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">psychology</span>
+                        <span>Why {matchScore}% Fit?</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (job.applyUrl) window.open(job.applyUrl, '_blank');
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-[#4338ca] hover:bg-[#3730a3] text-white text-xs font-mono font-bold transition flex items-center gap-1 shadow-xs"
+                    >
+                      <span>Direct Apply</span>
+                      <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                    </button>
+                  </div>
+                </div>
+
               </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">31</span>
-            </label>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={jobTypes.includes('INTERNSHIP')}
-                  onChange={() => toggleCheck(jobTypes, setJobTypes, 'INTERNSHIP')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">Paid Internship &gt;₹5k</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">3</span>
-            </label>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Footer Banner */}
+      <div className="mt-8 p-4 rounded-2xl bg-white border border-[#e2e8f0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#eef2ff] text-[#4338ca] flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[20px]">filter_alt</span>
           </div>
-
-          {/* Section: INTERVIEW MODE */}
-          <div className="flex flex-col gap-2">
-            <span className="font-mono text-[10.5px] uppercase font-bold text-[#64748b] tracking-wider">
-              INTERVIEW MODE
-            </span>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={interviewModes.includes('VIRTUAL')}
-                  onChange={() => toggleCheck(interviewModes, setInterviewModes, 'VIRTUAL')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">Virtual / Online</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">28</span>
-            </label>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={interviewModes.includes('WALK_IN')}
-                  onChange={() => toggleCheck(interviewModes, setInterviewModes, 'WALK_IN')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">Walk-in Drive</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">4</span>
-            </label>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={interviewModes.includes('HYBRID')}
-                  onChange={() => toggleCheck(interviewModes, setInterviewModes, 'HYBRID')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">Hybrid</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">2</span>
-            </label>
+          <div>
+            <div className="text-xs font-bold text-[#0f172a]">
+              Need Advanced Search & Multi-Attribute Criteria?
+            </div>
+            <div className="text-xs text-[#64748b]">
+              Filter by 8 distinct dimensions including specific IT companies, virtual interview modes, and city hubs.
+            </div>
           </div>
+        </div>
 
-          {/* Section: HUB LOCATION */}
-          <div className="flex flex-col gap-2">
-            <span className="font-mono text-[10.5px] uppercase font-bold text-[#64748b] tracking-wider">
-              HUB LOCATION
-            </span>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={locations.includes('Hyderabad')}
-                  onChange={() => toggleCheck(locations, setLocations, 'Hyderabad')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">Hyderabad</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">11</span>
-            </label>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={locations.includes('Bengaluru')}
-                  onChange={() => toggleCheck(locations, setLocations, 'Bengaluru')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">Bengaluru</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">9</span>
-            </label>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={locations.includes('Pune')}
-                  onChange={() => toggleCheck(locations, setLocations, 'Pune')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">Pune</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">5</span>
-            </label>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={locations.includes('Remote')}
-                  onChange={() => toggleCheck(locations, setLocations, 'Remote')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">Remote</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#059669] font-bold">WFH</span>
-            </label>
-          </div>
-
-          {/* Section: COMPENSATION */}
-          <div className="flex flex-col gap-2">
-            <span className="font-mono text-[10.5px] uppercase font-bold text-[#64748b] tracking-wider">
-              COMPENSATION
-            </span>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={compensation.includes('3.5-5')}
-                  onChange={() => toggleCheck(compensation, setCompensation, '3.5-5')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">₹3.5 - ₹5.0 LPA</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">14</span>
-            </label>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={compensation.includes('5-12')}
-                  onChange={() => toggleCheck(compensation, setCompensation, '5-12')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">₹5.0 - ₹12.0 LPA</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">7</span>
-            </label>
-            <label className="flex items-center justify-between cursor-pointer select-none py-0.5">
-              <div className="flex items-center gap-2">
-                <input 
-                  type="checkbox"
-                  checked={compensation.includes('12+')}
-                  onChange={() => toggleCheck(compensation, setCompensation, '12+')}
-                  className="rounded border-[#cbd5e1] text-[#4338ca] focus:ring-[#4338ca] h-3.5 w-3.5"
-                />
-                <span className="text-[#334155]">₹12.0 LPA+</span>
-              </div>
-              <span className="font-mono text-[10.5px] text-[#94a3b8]">3</span>
-            </label>
-          </div>
-
-        </aside>
-
-        {/* Right Cards List (Cols 4-12) */}
-        <main className="lg:col-span-9 flex flex-col gap-4">
-          
-          {/* CARD 1: Razorpay */}
-          <div 
-            onClick={() => onSelectJob('job-rzp')}
-            className="bg-white rounded-xl border border-[#e8eaf6] hover:border-[#c7d2fe] p-5 shadow-2xs transition cursor-pointer flex flex-col gap-3 group"
+        {onNavigateToSearchFilter && (
+          <button
+            onClick={onNavigateToSearchFilter}
+            className="px-4 py-2 bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-xl text-xs font-mono font-bold transition shrink-0 flex items-center gap-1.5 shadow-xs"
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-[#eef2ff] text-[#4338ca] flex items-center justify-center font-bold text-base shrink-0">
-                  R
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base font-bold text-[#0f172a] group-hover:text-[#4338ca] transition truncate">
-                      Graduate Software Engineer (Backend)
-                    </h3>
-                    <span className="bg-[#ecfdf5] text-[#059669] text-[10.5px] font-mono font-semibold px-2 py-0.5 rounded">
-                      94% Match
-                    </span>
-                  </div>
-                  <div className="text-xs text-[#64748b] mt-0.5 font-medium">
-                    Razorpay • Bengaluru (Hybrid) • 0 Yrs (2024 / 2025)
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end shrink-0">
-                <span className="text-lg font-bold font-mono text-[#0f172a]">₹14.0 <span className="text-xs font-normal text-[#64748b]">LPA</span></span>
-                <span className="text-[10px] font-mono text-[#64748b]">Verified CTC</span>
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {['Go / Golang', 'Java 17', 'Distributed Systems', 'Kafka', 'MySQL'].map(t => (
-                <span key={t} className="bg-[#f8fafc] border border-[#e2e8f0] text-[#475569] text-[11px] font-mono px-2 py-0.5 rounded">
-                  {t}
-                </span>
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#f1f5f9] text-xs">
-              <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#059669] font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>
-                <span>Zero-Fee Verified • Direct Portal</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={(e) => toggleSave('job-rzp', e)}
-                  className="p-1.5 text-[#94a3b8] hover:text-[#0f172a] rounded"
-                >
-                  <span className="material-symbols-outlined text-[17px]">
-                    {savedJobs.has('job-rzp') ? 'bookmark' : 'bookmark_border'}
-                  </span>
-                </button>
-                <a 
-                  href="https://razorpay.com/careers"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-7 px-3.5 bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-md text-xs font-semibold flex items-center gap-1 transition"
-                >
-                  <span>Apply on Razorpay</span>
-                  <span className="material-symbols-outlined text-[13px]">north_east</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* CARD 2: LTIMindtree Walk-in */}
-          <div 
-            onClick={() => onSelectJob('job-lti')}
-            className="bg-white rounded-xl border border-[#e8eaf6] hover:border-[#c7d2fe] p-5 shadow-2xs transition cursor-pointer flex flex-col gap-3 group"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-[#312e81] text-white flex items-center justify-center font-bold text-xs shrink-0">
-                  LTI
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base font-bold text-[#0f172a] group-hover:text-[#4338ca] transition truncate">
-                      Associate QA Automation Engineer
-                    </h3>
-                    <span className="bg-[#fef2f2] text-[#dc2626] text-[10.5px] font-mono font-semibold px-2 py-0.5 rounded flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#dc2626] animate-pulse"></span>
-                      WALK-IN DRIVE
-                    </span>
-                  </div>
-                  <div className="text-xs text-[#64748b] mt-0.5 font-medium">
-                    LTIMindtree • Hyderabad • Physical Drive: Mar 18
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end shrink-0">
-                <span className="text-lg font-bold font-mono text-[#0f172a]">₹4.5 <span className="text-xs font-normal text-[#64748b]">LPA</span></span>
-                <span className="text-[10px] font-mono text-[#64748b]">Standard Band</span>
-              </div>
-            </div>
-
-            {/* Venue Highlight Box */}
-            <div className="bg-[#f0fdf4] border border-[#bbf7d0] p-2.5 rounded-lg flex items-center gap-2 text-xs text-[#166534]">
-              <span className="material-symbols-outlined text-[16px]">calendar_month</span>
-              <span className="font-medium">Venue: Mindspace SEZ, Madhapur, Hyderabad • 10:00 AM IST • Direct Entry</span>
-            </div>
-
-            {/* Tags */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {['Selenium', 'Java & OOP', 'TestNG', 'Postman', 'SQL'].map(t => (
-                <span key={t} className="bg-[#f8fafc] border border-[#e2e8f0] text-[#475569] text-[11px] font-mono px-2 py-0.5 rounded">
-                  {t}
-                </span>
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#f1f5f9] text-xs">
-              <div className="text-[11px] font-mono text-[#64748b]">
-                • 88% Resume Match • Hall Pass Not Required
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={(e) => toggleSave('job-lti', e)}
-                  className="p-1.5 text-[#94a3b8] hover:text-[#0f172a] rounded"
-                >
-                  <span className="material-symbols-outlined text-[17px]">
-                    {savedJobs.has('job-lti') ? 'bookmark' : 'bookmark_border'}
-                  </span>
-                </button>
-                <a 
-                  href="https://ltimindtree.com/careers"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-7 px-3.5 bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-md text-xs font-semibold flex items-center gap-1 transition"
-                >
-                  <span>View Official Circular</span>
-                  <span className="material-symbols-outlined text-[13px]">north_east</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* CARD 3: Swiggy Intern */}
-          <div 
-            onClick={() => onSelectJob('job-swiggy')}
-            className="bg-white rounded-xl border border-[#e8eaf6] hover:border-[#c7d2fe] p-5 shadow-2xs transition cursor-pointer flex flex-col gap-3 group"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-[#ffedd5] text-[#ea580c] flex items-center justify-center font-bold text-base shrink-0">
-                  S
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base font-bold text-[#0f172a] group-hover:text-[#4338ca] transition truncate">
-                      Frontend Engineering Intern
-                    </h3>
-                    <span className="bg-[#ecfdf5] text-[#059669] text-[10.5px] font-mono font-semibold px-2 py-0.5 rounded">
-                      82% Match
-                    </span>
-                    <span className="bg-[#eff6ff] text-[#2563eb] text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded">
-                      PPO AVAILABLE
-                    </span>
-                  </div>
-                  <div className="text-xs text-[#64748b] mt-0.5 font-medium">
-                    Swiggy • Remote (India) • 6 Months Full-Time
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end shrink-0">
-                <span className="text-lg font-bold font-mono text-[#0f172a]">₹35,000 <span className="text-xs font-normal text-[#64748b]">/mo</span></span>
-                <span className="text-[10px] font-mono text-[#64748b]">₹11.0L PPO CTC</span>
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {['React 18', 'Next.js', 'Tailwind CSS', 'Redux Toolkit'].map(t => (
-                <span key={t} className="bg-[#f8fafc] border border-[#e2e8f0] text-[#475569] text-[11px] font-mono px-2 py-0.5 rounded">
-                  {t}
-                </span>
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#f1f5f9] text-xs">
-              <div className="text-[11px] font-mono text-[#059669] font-medium">
-                • Greenhouse Direct • Closes in 4 days
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={(e) => toggleSave('job-swiggy', e)}
-                  className="p-1.5 text-[#94a3b8] hover:text-[#0f172a] rounded"
-                >
-                  <span className="material-symbols-outlined text-[17px]">
-                    {savedJobs.has('job-swiggy') ? 'bookmark' : 'bookmark_border'}
-                  </span>
-                </button>
-                <a 
-                  href="https://swiggy.com/careers"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-7 px-3.5 bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-md text-xs font-semibold flex items-center gap-1 transition"
-                >
-                  <span>Apply on Greenhouse</span>
-                  <span className="material-symbols-outlined text-[13px]">north_east</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* CARD 4: IndirechLabs Python */}
-          <div 
-            onClick={() => onSelectJob('job-indirech')}
-            className="bg-white rounded-xl border border-[#e8eaf6] hover:border-[#c7d2fe] p-5 shadow-2xs transition cursor-pointer flex flex-col gap-3 group"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-[#f1f5f9] text-[#475569] flex items-center justify-center font-bold text-xs shrink-0">
-                  IT
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base font-bold text-[#0f172a] group-hover:text-[#4338ca] transition truncate">
-                      Junior Python / Django Developer
-                    </h3>
-                    <span className="bg-[#ecfdf5] text-[#059669] text-[10.5px] font-mono font-semibold px-2 py-0.5 rounded">
-                      76% Match
-                    </span>
-                  </div>
-                  <div className="text-xs text-[#64748b] mt-0.5 font-medium">
-                    IndirechLabs • Pune (Viman Nagar) • On-site
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end shrink-0">
-                <span className="text-lg font-bold font-mono text-[#0f172a]">₹3.6 - 4.2 <span className="text-xs font-normal text-[#64748b]">LPA</span></span>
-                <span className="text-[10px] font-mono text-[#64748b]">Estimated</span>
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {['Python 3.11', 'Django REST', 'PostgreSQL', 'Git'].map(t => (
-                <span key={t} className="bg-[#f8fafc] border border-[#e2e8f0] text-[#475569] text-[11px] font-mono px-2 py-0.5 rounded">
-                  {t}
-                </span>
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#f1f5f9] text-xs">
-              <div className="text-[11px] font-mono text-[#64748b]">
-                Aggregator Listing • Free Application
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={(e) => toggleSave('job-indirech', e)}
-                  className="p-1.5 text-[#94a3b8] hover:text-[#0f172a] rounded"
-                >
-                  <span className="material-symbols-outlined text-[17px]">
-                    {savedJobs.has('job-indirech') ? 'bookmark' : 'bookmark_border'}
-                  </span>
-                </button>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); onSelectJob('job-indirech'); }}
-                  className="h-7 px-3 bg-[#f8fafc] hover:bg-[#f1f5f9] text-[#334155] border border-[#e2e8f0] rounded-md text-xs font-semibold flex items-center gap-1 transition"
-                >
-                  <span>View Listing</span>
-                  <span>→</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Pagination Row */}
-          <div className="flex items-center justify-between text-xs text-[#64748b] pt-3 px-1">
-            <span>Page 1 of 3 (34 jobs shown)</span>
-            <div className="flex items-center gap-1">
-              <button disabled className="h-7 w-7 rounded bg-[#f1f5f9] text-[#94a3b8] flex items-center justify-center font-mono">
-                &lt;
-              </button>
-              <button className="h-7 w-7 rounded bg-[#4338ca] text-white flex items-center justify-center font-mono font-bold">
-                1
-              </button>
-              <button className="h-7 w-7 rounded bg-white hover:bg-[#f1f5f9] text-[#334155] flex items-center justify-center font-mono">
-                2
-              </button>
-              <button className="h-7 w-7 rounded bg-white hover:bg-[#f1f5f9] text-[#334155] flex items-center justify-center font-mono">
-                3
-              </button>
-              <button className="h-7 w-7 rounded bg-white hover:bg-[#f1f5f9] text-[#334155] flex items-center justify-center font-mono">
-                &gt;
-              </button>
-            </div>
-          </div>
-
-          {/* Anti-Exploitation Guarantee Footer Banner */}
-          <div className="p-3.5 bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl flex items-center justify-between flex-wrap gap-2 text-xs text-[#166534] mt-2">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-[#059669]">verified_user</span>
-              <span><strong>Anti-Exploitation Guarantee:</strong> 100% verified zero-deposit policy and fresher-specific compensation floor.</span>
-            </div>
-            <a 
-              href="#protocol" 
-              onClick={(e) => { e.preventDefault(); alert("JobMate Anti-Exploitation Protocol:\n1. Strict 0 YOE Gate\n2. Minimum ₹2.4 LPA floor\n3. Zero bond guarantee\n4. Direct official portals only."); }}
-              className="text-[#059669] hover:underline font-semibold flex items-center gap-1"
-            >
-              <span>Protocol Guidelines</span>
-              <span>→</span>
-            </a>
-          </div>
-
-        </main>
+            <span>Open Advanced Filter Matrix</span>
+            <span className="material-symbols-outlined text-[16px]">tune</span>
+          </button>
+        )}
       </div>
 
     </div>
