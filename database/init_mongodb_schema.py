@@ -1,5 +1,5 @@
-"""
-IT Career Partner — MongoDB Initialization & Indexing Script
+﻿"""
+IT Career Partner â€” MongoDB Initialization & Indexing Script
 Based on: IT_Career_Partner_Database_API_Design.md (v1.0 Baseline)
 Supports: MongoDB Atlas URI or Localhost
 """
@@ -171,9 +171,10 @@ def initialize_database(uri, db_name=DEFAULT_DB_NAME):
     ])
     print("  [+] notification_outbox: (status, nextAttemptAt)")
 
-    print("\n[✔] Database initialization and indexing completed successfully!")
+    print("\n[âœ”] Database initialization and indexing completed successfully!")
     return True
 
 if __name__ == "__main__":
     uri = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
     initialize_database(uri)
+

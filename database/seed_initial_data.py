@@ -1,5 +1,5 @@
-"""
-IT Career Partner — Initial Data Seeding Script
+﻿"""
+IT Career Partner â€” Initial Data Seeding Script
 Populates verified companies and fresher IT jobs matching Google Stitch UI references.
 """
 
@@ -201,7 +201,7 @@ def seed_data(uri, db_name="it_career_partner"):
             "verificationStatus": "VERIFIED",
             "requiredSkills": ["React 18", "Next.js", "Tailwind CSS", "Redux Toolkit", "TypeScript"],
             "preferredSkills": ["Web Performance", "Jest"],
-            "descriptionText": "6 months full-time frontend engineering internship with PPO conversion opportunity (₹11.0 LPA CTC)...",
+            "descriptionText": "6 months full-time frontend engineering internship with PPO conversion opportunity (â‚¹11.0 LPA CTC)...",
             "firstDiscoveredAt": datetime.now(timezone.utc),
             "lastVerifiedAt": datetime.now(timezone.utc),
             "lastSeenAt": datetime.now(timezone.utc),
@@ -213,8 +213,9 @@ def seed_data(uri, db_name="it_career_partner"):
         db.jobs.update_one({"_id": job["_id"]}, {"$set": job}, upsert=True)
     print(f"  [+] Seeded {len(jobs_data)} verified fresher jobs.")
 
-    print("\n[✔] Initial seed data successfully applied!")
+    print("\n[âœ”] Initial seed data successfully applied!")
 
 if __name__ == "__main__":
     uri = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
     seed_data(uri)
+
