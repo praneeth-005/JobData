@@ -81,6 +81,20 @@ export interface PipelineItem {
   statusType: 'INTERVIEW' | 'ASSESSMENT' | 'UNDER_REVIEW';
 }
 
+export interface EducationEntry {
+  id: string;
+  category?: 'higher_ed' | 'school' | 'diploma';
+  title: string;
+  badge?: string;
+  isPrimary: boolean;
+  qualification: string;
+  gradYear: string;
+  specialization: string;
+  institution: string;
+  scoreType: 'cgpa' | 'pct';
+  scoreValue: string;
+}
+
 export interface UserProfile {
   id?: string;
   fullName: string;
@@ -93,6 +107,7 @@ export interface UserProfile {
   collegeName?: string;
   specialization?: string;
   cgpa?: string;
+  educationList?: EducationEntry[];
   skills: string[];
   targetRoles: string[];
   preferredLocations: string[];

@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -56,6 +57,23 @@ public class AuthService {
         user.setEmailVerified(false);
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
+
+        // Default primary credential
+        if (request.getDegree() != null && !request.getDegree().isBlank()) {
+            user.getEducationList().add(new EducationCredential(
+                    "edu_primary",
+                    "higher_ed",
+                    "Primary Degree",
+                    "Current Qualification",
+                    true,
+                    request.getDegree(),
+                    request.getGraduationYear() != null ? request.getGraduationYear() : "2027",
+                    "Engineering / Computer Science",
+                    "Registered Institution",
+                    "cgpa",
+                    "8.4"
+            ));
+        }
 
         User savedUser = userRepository.save(user);
 
@@ -109,20 +127,21 @@ public class AuthService {
 
     public boolean verifyEmail(String token) {
         EmailToken emailToken = emailTokenRepository.findByTokenHashAndPurposeAndUsedFalse(token, "EMAIL_VERIFICATION")
-                .orElseThrow(() -> new IllegalArgumentException("Invalid or already used verification token."));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or unrecognized verification token."));
 
         if (emailToken.getExpiresAt().isBefore(Instant.now())) {
-            throw new IllegalArgumentException("Verification token has expired.");
+            throw new IllegalArgumentException("Verification token has expired. Please request a new verification link.");
         }
 
         User user = userRepository.findById(emailToken.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found for token."));
+                .orElseThrow(() -> new IllegalArgumentException("User not found for this token."));
 
         user.setEmailVerified(true);
         user.setEmailVerifiedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
         userRepository.save(user);
 
+        // Mark single-use token as used
         emailToken.setUsed(true);
         emailTokenRepository.save(emailToken);
 
@@ -138,7 +157,6 @@ public class AuthService {
         }
 
         User user = userOptional.get();
-
         String rawToken = generateSecureToken();
         EmailToken resetToken = new EmailToken(
                 rawToken,
@@ -163,7 +181,6 @@ public class AuthService {
         User user = userRepository.findById(emailToken.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
-        // Hash new password securely with BCrypt
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         user.setUpdatedAt(Instant.now());
         userRepository.save(user);
@@ -183,7 +200,7 @@ public class AuthService {
             return userRepository.findById(userId).map(this::mapToDto).orElse(null);
         }
 
-        // Return first user or default demo profile if exists
+        // Return first user or default profile if exists
         return userRepository.findAll().stream().findFirst().map(this::mapToDto).orElse(null);
     }
 
@@ -206,13 +223,107 @@ public class AuthService {
             });
         }
 
-        if (profileDto.getFullName() != null && !profileDto.getFullName().isBlank()) user.setFullName(profileDto.getFullName().trim());
-        if (profileDto.getPhone() != null) user.setPhone(profileDto.getPhone().trim());
-        if (profileDto.getGraduationYear() != null) user.setGraduationYear(profileDto.getGraduationYear());
-        if (profileDto.getDegree() != null) user.setDegree(profileDto.getDegree());
-        if (profileDto.getCollegeName() != null) user.setCollegeName(profileDto.getCollegeName().trim());
-        if (profileDto.getSpecialization() != null) user.setSpecialization(profileDto.getSpecialization().trim());
-        if (profileDto.getCgpa() != null) user.setCgpa(profileDto.getCgpa().trim());
+        // 1. Validate and update Full Name
+        if (profileDto.getFullName() != null) {
+            String name = profileDto.getFullName().trim();
+            if (name.length() < 2 || name.length() > 100) {
+                throw new IllegalArgumentException("Full legal name must be between 2 and 100 characters.");
+            }
+            user.setFullName(name);
+        }
+
+        // 2. Validate and update Phone Number
+        if (profileDto.getPhone() != null && !profileDto.getPhone().isBlank()) {
+            String cleanPhone = profileDto.getPhone().replaceAll("[\\s\\-\\(\\)]", "");
+            if (!cleanPhone.matches("^\\+?[0-9]{10,15}$")) {
+                throw new IllegalArgumentException("Phone number must contain between 10 and 15 digits.");
+            }
+            user.setPhone(profileDto.getPhone().trim());
+        }
+
+        // 3. Process & Validate Education Credentials List (supports removals, additions, updates)
+        if (profileDto.getEducationList() != null) {
+            List<EducationCredential> validatedList = new ArrayList<>();
+            for (EducationCredential edu : profileDto.getEducationList()) {
+                if (edu == null) continue;
+
+                String qual = edu.getQualification() != null ? edu.getQualification().trim() : "";
+                String inst = edu.getInstitution() != null ? edu.getInstitution().trim() : "";
+                if (qual.isBlank() && inst.isBlank()) {
+                    continue; // Skip empty row
+                }
+
+                // Score boundary validation
+                if (edu.getScoreValue() != null && !edu.getScoreValue().isBlank()) {
+                    try {
+                        double score = Double.parseDouble(edu.getScoreValue().trim());
+                        if ("cgpa".equalsIgnoreCase(edu.getScoreType())) {
+                            if (score < 0.0 || score > 10.0) {
+                                throw new IllegalArgumentException("CGPA must be between 0.0 and 10.0 (received " + score + ").");
+                            }
+                        } else {
+                            if (score < 0.0 || score > 100.0) {
+                                throw new IllegalArgumentException("Percentage aggregate must be between 0.0 and 100.0 (received " + score + ").");
+                            }
+                        }
+                    } catch (NumberFormatException ex) {
+                        throw new IllegalArgumentException("Academic score must be a valid numeric figure (e.g. 8.4 or 85.0).");
+                    }
+                }
+
+                // Graduation year sanity validation
+                if (edu.getGradYear() != null && !edu.getGradYear().isBlank()) {
+                    String rawYear = edu.getGradYear().replaceAll("[^0-9]", "");
+                    if (rawYear.length() >= 4) {
+                        int year = Integer.parseInt(rawYear.substring(0, 4));
+                        if (year < 1980 || year > 2035) {
+                            throw new IllegalArgumentException("Graduation year must be between 1980 and 2035.");
+                        }
+                    }
+                }
+
+                validatedList.add(edu);
+            }
+
+            // Ensure exactly one primary credential if credentials exist
+            if (!validatedList.isEmpty() && !validatedList.stream().anyMatch(EducationCredential::isPrimary)) {
+                validatedList.get(0).setPrimary(true);
+                validatedList.get(0).setBadge("Current Qualification");
+            }
+
+            // Persist the entire list into MongoDB (any removed item is cleanly deleted)
+            user.setEducationList(validatedList);
+
+            // Synchronize primary degree fields on the User document
+            EducationCredential primary = validatedList.stream()
+                    .filter(EducationCredential::isPrimary)
+                    .findFirst()
+                    .orElse(validatedList.isEmpty() ? null : validatedList.get(0));
+
+            if (primary != null) {
+                user.setDegree(primary.getQualification());
+                user.setGraduationYear(primary.getGradYear());
+                user.setSpecialization(primary.getSpecialization());
+                user.setCollegeName(primary.getInstitution());
+                user.setCgpa(primary.getScoreValue());
+            } else {
+                // If user removed all education details
+                user.setDegree("");
+                user.setGraduationYear("");
+                user.setSpecialization("");
+                user.setCollegeName("");
+                user.setCgpa("");
+            }
+        } else {
+            // Direct field fallback updates if educationList is not sent
+            if (profileDto.getGraduationYear() != null) user.setGraduationYear(profileDto.getGraduationYear());
+            if (profileDto.getDegree() != null) user.setDegree(profileDto.getDegree());
+            if (profileDto.getCollegeName() != null) user.setCollegeName(profileDto.getCollegeName().trim());
+            if (profileDto.getSpecialization() != null) user.setSpecialization(profileDto.getSpecialization().trim());
+            if (profileDto.getCgpa() != null) user.setCgpa(profileDto.getCgpa().trim());
+        }
+
+        // 4. Skills & Preferences Updates
         if (profileDto.getSkills() != null) user.setSkills(profileDto.getSkills());
         if (profileDto.getTargetRoles() != null) user.setTargetRoles(profileDto.getTargetRoles());
         if (profileDto.getPreferredLocations() != null) user.setPreferredLocations(profileDto.getPreferredLocations());
@@ -241,6 +352,29 @@ public class AuthService {
         dto.setCollegeName(u.getCollegeName());
         dto.setSpecialization(u.getSpecialization());
         dto.setCgpa(u.getCgpa());
+
+        // Map education list; if empty, initialize default primary degree from user fields
+        List<EducationCredential> edus = u.getEducationList();
+        if (edus == null || edus.isEmpty()) {
+            edus = new ArrayList<>();
+            if (u.getDegree() != null && !u.getDegree().isBlank()) {
+                edus.add(new EducationCredential(
+                        "edu_primary",
+                        "higher_ed",
+                        "Primary Degree",
+                        "Current Qualification",
+                        true,
+                        u.getDegree(),
+                        u.getGraduationYear() != null ? u.getGraduationYear() : "2027",
+                        u.getSpecialization() != null ? u.getSpecialization() : "Computer Science & Engineering",
+                        u.getCollegeName() != null ? u.getCollegeName() : "RV College of Engineering, Bengaluru",
+                        "cgpa",
+                        u.getCgpa() != null ? u.getCgpa() : "8.4"
+                ));
+            }
+        }
+        dto.setEducationList(edus);
+
         dto.setSkills(u.getSkills() != null ? u.getSkills() : new ArrayList<>());
         dto.setTargetRoles(u.getTargetRoles() != null ? u.getTargetRoles() : new ArrayList<>());
         dto.setPreferredLocations(u.getPreferredLocations() != null ? u.getPreferredLocations() : new ArrayList<>());

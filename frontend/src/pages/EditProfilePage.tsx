@@ -1,24 +1,10 @@
 import React, { useState } from 'react';
-import { UserProfile } from '../types';
+import { UserProfile, EducationEntry } from '../types';
 
 interface EditProfilePageProps {
   profile: UserProfile;
   onSaveSuccess: (updated: UserProfile) => void;
   onCancel: () => void;
-}
-
-export interface EducationEntry {
-  id: string;
-  category: 'higher_ed' | 'school' | 'diploma';
-  title: string;
-  badge: string;
-  isPrimary: boolean;
-  qualification: string;
-  gradYear: string;
-  specialization: string;
-  institution: string;
-  scoreType: 'cgpa' | 'pct';
-  scoreValue: string;
 }
 
 export default function EditProfilePage({
@@ -30,35 +16,39 @@ export default function EditProfilePage({
   const [fullName, setFullName] = useState(profile.fullName || 'Arjun Rao');
   const [phone, setPhone] = useState(profile.phone || '98452 11094');
 
-  // Dynamic Education Credentials State
-  const [educationList, setEducationList] = useState<EducationEntry[]>([
-    {
-      id: 'edu_primary',
-      category: 'higher_ed',
-      title: 'Primary Degree',
-      badge: 'Current Qualification',
-      isPrimary: true,
-      qualification: profile.degree || 'B.Tech / B.E.',
-      gradYear: profile.graduationYear || '2027',
-      specialization: profile.specialization || 'Computer Science & Engineering',
-      institution: profile.collegeName || 'RV College of Engineering, Bengaluru',
-      scoreType: 'cgpa',
-      scoreValue: profile.cgpa || '8.4',
-    },
-    {
-      id: 'edu_12th',
-      category: 'school',
-      title: 'Senior Secondary / Class XII / Intermediate',
-      badge: 'Completed',
-      isPrimary: false,
-      qualification: 'CBSE - Science (Physics, Chemistry, Math, CS)',
-      gradYear: '2021',
-      specialization: 'Science Stream (PCM & Computer Science)',
-      institution: 'National Public School, Indiranagar',
-      scoreType: 'pct',
-      scoreValue: '91.4',
-    },
-  ]);
+  // Dynamic Education Credentials State (synced with profile.educationList from backend)
+  const [educationList, setEducationList] = useState<EducationEntry[]>(
+    profile.educationList && profile.educationList.length > 0
+      ? profile.educationList
+      : [
+          {
+            id: 'edu_primary',
+            category: 'higher_ed',
+            title: 'Primary Degree',
+            badge: 'Current Qualification',
+            isPrimary: true,
+            qualification: profile.degree || 'B.Tech / B.E.',
+            gradYear: profile.graduationYear || '2027',
+            specialization: profile.specialization || 'Computer Science & Engineering',
+            institution: profile.collegeName || 'RV College of Engineering, Bengaluru',
+            scoreType: 'cgpa',
+            scoreValue: profile.cgpa || '8.4',
+          },
+          {
+            id: 'edu_12th',
+            category: 'school',
+            title: 'Senior Secondary / Class XII / Intermediate',
+            badge: 'Completed',
+            isPrimary: false,
+            qualification: 'CBSE - Science (Physics, Chemistry, Math, CS)',
+            gradYear: '2021',
+            specialization: 'Science Stream (PCM & Computer Science)',
+            institution: 'National Public School, Indiranagar',
+            scoreType: 'pct',
+            scoreValue: '91.4',
+          },
+        ]
+  );
 
   // Skills state
   const [skills, setSkills] = useState<string[]>(
@@ -71,6 +61,7 @@ export default function EditProfilePage({
   // UI state
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
+  const [validationErrorMessage, setValidationErrorMessage] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
 
   // Suggested skills to append
@@ -90,6 +81,7 @@ export default function EditProfilePage({
       }
       return remaining;
     });
+    setValidationErrorMessage(null);
   };
 
   const updateEducation = (
@@ -114,6 +106,7 @@ export default function EditProfilePage({
         return item;
       })
     );
+    setValidationErrorMessage(null);
   };
 
   const addEducation = (category: 'higher_ed' | 'school' | 'diploma' = 'school') => {
@@ -166,6 +159,7 @@ export default function EditProfilePage({
 
     setEducationList((prev) => [...prev, newEntry]);
     setShowAddMenu(false);
+    setValidationErrorMessage(null);
   };
 
   const addSkill = (skill: string) => {
@@ -183,11 +177,12 @@ export default function EditProfilePage({
   // Calibration progress
   const calibrationScore = Math.min(100, Math.max(40, 50 + skills.length * 7));
 
-  // Save handler with live backend persistence
+  // Save handler with live backend validation & MongoDB persistence
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsSaving(true);
     setSaveSuccessMessage(null);
+    setValidationErrorMessage(null);
 
     const primaryEdu = educationList.find((entry) => entry.isPrimary) || educationList[0];
 
@@ -200,6 +195,7 @@ export default function EditProfilePage({
       specialization: primaryEdu ? primaryEdu.specialization : '',
       collegeName: primaryEdu ? primaryEdu.institution : '',
       cgpa: primaryEdu ? primaryEdu.scoreValue : '',
+      educationList,
       skills,
     };
 
@@ -214,20 +210,18 @@ export default function EditProfilePage({
       if (res.ok) {
         const json = await res.json();
         const data = json.data || updatedProfile;
-        setSaveSuccessMessage('Profile and education details saved and synced with MongoDB Atlas & ATS calibrator!');
+        setSaveSuccessMessage('Education credentials and profile validated and saved to MongoDB Atlas!');
         setTimeout(() => {
           onSaveSuccess(data);
         }, 1200);
       } else {
-        // Fallback local update
-        setSaveSuccessMessage('Profile and education details updated locally!');
-        setTimeout(() => {
-          onSaveSuccess(updatedProfile);
-        }, 1200);
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.error?.message || 'Server returned validation error. Please verify input fields.';
+        setValidationErrorMessage(errMsg);
       }
     } catch {
       // Offline fallback
-      setSaveSuccessMessage('Profile and education details updated locally!');
+      setSaveSuccessMessage('Profile and education details saved locally!');
       setTimeout(() => {
         onSaveSuccess(updatedProfile);
       }, 1200);
@@ -252,7 +246,7 @@ export default function EditProfilePage({
         <div className="flex items-center gap-3">
           <div className="hidden lg:flex items-center gap-1.5 text-xs text-[#059669]">
             <span className="material-symbols-outlined text-[16px]">sync</span>
-            <span>Auto-sync with executive match engine</span>
+            <span>MongoDB Atlas Auto-Sync</span>
           </div>
 
           <button 
@@ -300,6 +294,14 @@ export default function EditProfilePage({
           <div className="p-3.5 bg-[#ecfdf5] border border-[#a7f3d0] rounded-xl flex items-center gap-2.5 text-xs text-[#059669] font-medium animate-fade-in">
             <span className="material-symbols-outlined text-[20px]">check_circle</span>
             <span>{saveSuccessMessage}</span>
+          </div>
+        )}
+
+        {/* Backend Validation Error Banner */}
+        {validationErrorMessage && (
+          <div className="p-3.5 bg-[#fef2f2] border border-[#fecaca] rounded-xl flex items-center gap-2.5 text-xs text-[#dc2626] font-medium animate-fade-in">
+            <span className="material-symbols-outlined text-[20px]">error</span>
+            <span>{validationErrorMessage}</span>
           </div>
         )}
 

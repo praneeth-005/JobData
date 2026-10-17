@@ -36,6 +36,8 @@ public class User {
 
     private String cgpa;
 
+    private List<EducationCredential> educationList = new ArrayList<>();
+
     private List<String> skills = new ArrayList<>();
 
     private List<String> targetRoles = new ArrayList<>();
@@ -104,6 +106,9 @@ public class User {
 
     public String getCgpa() { return cgpa; }
     public void setCgpa(String cgpa) { this.cgpa = cgpa; }
+
+    public List<EducationCredential> getEducationList() { return educationList; }
+    public void setEducationList(List<EducationCredential> educationList) { this.educationList = educationList; }
 
     public List<String> getSkills() { return skills; }
     public void setSkills(List<String> skills) { this.skills = skills; }

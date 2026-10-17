@@ -115,6 +115,34 @@ public class AuthController {
             demo.setInterviewPreference("online");
             demo.setWorkingDaysPreference("5_days");
             demo.setSalaryFloorLpa(2.4);
+            demo.setEducationList(List.of(
+                    new EducationCredential(
+                            "edu_primary",
+                            "higher_ed",
+                            "Primary Degree",
+                            "Current Qualification",
+                            true,
+                            "B.Tech / B.E.",
+                            "2027",
+                            "Computer Science & Engineering",
+                            "RV College of Engineering, Bengaluru",
+                            "cgpa",
+                            "8.4"
+                    ),
+                    new EducationCredential(
+                            "edu_12th",
+                            "school",
+                            "Senior Secondary / Class XII / Intermediate",
+                            "Completed",
+                            false,
+                            "CBSE - Science (Physics, Chemistry, Math, CS)",
+                            "2021",
+                            "Science Stream (PCM & Computer Science)",
+                            "National Public School, Indiranagar",
+                            "pct",
+                            "91.4"
+                    )
+            ));
             return ResponseEntity.ok(ApiResponse.ok(demo));
         }
         return ResponseEntity.ok(ApiResponse.ok(profile));
@@ -124,8 +152,12 @@ public class AuthController {
     public ResponseEntity<ApiResponse<UserProfileDto>> updateProfile(
             @RequestBody UserProfileDto profileDto,
             HttpServletRequest httpRequest) {
-        UserProfileDto updated = authService.updateProfile(profileDto, httpRequest);
-        return ResponseEntity.ok(ApiResponse.ok(updated));
+        try {
+            UserProfileDto updated = authService.updateProfile(profileDto, httpRequest);
+            return ResponseEntity.ok(ApiResponse.ok(updated));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("VALIDATION_ERROR", ex.getMessage()));
+        }
     }
 
     @GetMapping("/csrf")

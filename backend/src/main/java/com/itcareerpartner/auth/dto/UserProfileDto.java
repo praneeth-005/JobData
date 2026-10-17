@@ -1,5 +1,6 @@
 package com.itcareerpartner.auth.dto;
 
+import com.itcareerpartner.auth.EducationCredential;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class UserProfileDto {
     private String collegeName;
     private String specialization;
     private String cgpa;
+    private List<EducationCredential> educationList = new ArrayList<>();
     private List<String> skills = new ArrayList<>();
     private List<String> targetRoles = new ArrayList<>();
     private List<String> preferredLocations = new ArrayList<>();
@@ -68,6 +70,9 @@ public class UserProfileDto {
 
     public String getCgpa() { return cgpa; }
     public void setCgpa(String cgpa) { this.cgpa = cgpa; }
+
+    public List<EducationCredential> getEducationList() { return educationList; }
+    public void setEducationList(List<EducationCredential> educationList) { this.educationList = educationList; }
 
     public List<String> getSkills() { return skills; }
     public void setSkills(List<String> skills) { this.skills = skills; }
