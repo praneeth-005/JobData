@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import DashboardPage from './pages/DashboardPage';
 import FindJobsPage from './pages/FindJobsPage';
 import JobDetailsPage from './pages/JobDetailsPage';
+import SignInPage from './pages/SignInPage';
+import SignUpPage from './pages/SignUpPage';
 
-export type Screen = 'OVERVIEW' | 'FIND_JOBS' | 'JOB_DETAILS';
+export type Screen = 'OVERVIEW' | 'FIND_JOBS' | 'JOB_DETAILS' | 'SIGN_IN' | 'SIGN_UP';
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('OVERVIEW');
@@ -30,6 +32,25 @@ export default function App() {
       }, 1000);
     }
   };
+
+  // If in standalone Auth screens, render without the main dashboard shell chrome
+  if (activeScreen === 'SIGN_IN') {
+    return (
+      <SignInPage 
+        onSignInSuccess={() => setActiveScreen('OVERVIEW')}
+        onNavigateToSignUp={() => setActiveScreen('SIGN_UP')}
+      />
+    );
+  }
+
+  if (activeScreen === 'SIGN_UP') {
+    return (
+      <SignUpPage 
+        onSignUpSuccess={() => setActiveScreen('OVERVIEW')}
+        onNavigateToSignIn={() => setActiveScreen('SIGN_IN')}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#faf8ff] text-[#0f172a] font-sans flex flex-col">
@@ -181,57 +202,32 @@ export default function App() {
               </button>
             </div>
 
-            {/* Group: TRACKING */}
+            {/* Group: ACCESS & AUTH */}
             <div className="flex flex-col gap-1">
               <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
-                TRACKING
+                ACCOUNT PORTAL
               </span>
 
               <button 
-                onClick={() => setActiveScreen('OVERVIEW')}
+                onClick={() => setActiveScreen('SIGN_IN')}
                 className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">assignment_turned_in</span>
-                  <span>My Applications</span>
+                  <span className="material-symbols-outlined text-[17px] text-[#4338ca]">login</span>
+                  <span>Sign In</span>
                 </div>
-                <span className="text-[10px] font-mono bg-[#f1f5f9] px-1.5 py-0.2 rounded font-bold">
-                  12
-                </span>
+                <span className="text-[10px] font-mono text-[#4338ca] font-bold">Studio</span>
               </button>
 
               <button 
-                onClick={() => setIsNotificationOpen(true)}
+                onClick={() => setActiveScreen('SIGN_UP')}
                 className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px]">notifications</span>
-                  <span>Notifications</span>
+                  <span className="material-symbols-outlined text-[17px] text-[#059669]">person_add</span>
+                  <span>Sign Up (Fresher)</span>
                 </div>
-                <span className="w-2 h-2 rounded-full bg-[#dc2626]"></span>
-              </button>
-            </div>
-
-            {/* Group: CONFIGURATION */}
-            <div className="flex flex-col gap-1">
-              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
-                CONFIGURATION
-              </span>
-
-              <button 
-                onClick={() => alert("Preferences:\n- Floor CTC: ≥ ₹2.4 LPA (Enforced)\n- Freshers Only: 0 YOE (Enforced)\n- Cities: Hyderabad, Bengaluru, Pune, Remote")}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
-              >
-                <span className="material-symbols-outlined text-[17px]">tune</span>
-                <span>Preferences</span>
-              </button>
-
-              <button 
-                onClick={() => alert("Account Settings:\n- Arjun Rao (2024 Grad, CS Engineering)\n- Master Resume: Arjun_Rao_2024.pdf\n- Email: arjun.rao@example.com")}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-[#f8fafc] text-[#334155] transition"
-              >
-                <span className="material-symbols-outlined text-[17px]">settings</span>
-                <span>Account Settings</span>
+                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.2 rounded">New</span>
               </button>
             </div>
 
@@ -251,10 +247,11 @@ export default function App() {
               </div>
             </div>
             <button 
-              onClick={() => alert("Profile Settings: Arjun Rao")}
-              className="text-[#94a3b8] hover:text-[#0f172a]"
+              onClick={() => setActiveScreen('SIGN_IN')}
+              title="Switch account / Sign in"
+              className="text-[#94a3b8] hover:text-[#4338ca]"
             >
-              <span className="material-symbols-outlined text-[17px]">settings</span>
+              <span className="material-symbols-outlined text-[17px]">logout</span>
             </button>
           </div>
 
@@ -314,6 +311,15 @@ export default function App() {
               <span className="hidden sm:inline">Upload Master Resume</span>
             </button>
 
+            {/* Auth Portal Button */}
+            <button 
+              onClick={() => setActiveScreen('SIGN_IN')}
+              className="h-8 px-3 bg-[#FAF8F5] border border-[#EDE6DE] hover:bg-[#f3ede4] text-[#191512] rounded-lg text-xs font-semibold flex items-center gap-1 transition"
+            >
+              <span className="material-symbols-outlined text-[15px]">login</span>
+              <span>Sign In</span>
+            </button>
+
             {/* Notification Bell */}
             <button 
               onClick={() => setIsNotificationOpen(true)}
@@ -324,7 +330,11 @@ export default function App() {
             </button>
 
             {/* Avatar */}
-            <div className="w-8 h-8 rounded-full bg-[#0f172a] text-white font-bold text-xs flex items-center justify-center">
+            <div 
+              onClick={() => setActiveScreen('SIGN_IN')}
+              title="Click to switch account"
+              className="w-8 h-8 rounded-full bg-[#0f172a] text-white font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+            >
               AR
             </div>
 
