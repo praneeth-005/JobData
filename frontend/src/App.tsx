@@ -24,6 +24,15 @@ import ResumeHistoryVersionsPage from './pages/ResumeHistoryVersionsPage';
 
 import { UserProfile } from './types';
 import { ResumeTab } from './components/ResumeSubNav';
+// Stitch 5 Interfaces: Application Tracker & Pursuit Suite
+import ApplicationTrackerKanbanPage from './pages/ApplicationTrackerKanbanPage';
+import SavedJobsPage from './pages/SavedJobsPage';
+import ApplicationDetailsTimelinePage from './pages/ApplicationDetailsTimelinePage';
+import UpcomingActivitiesSchedulePage from './pages/UpcomingActivitiesSchedulePage';
+import ApplicationDrawer from './components/ApplicationDrawer';
+import { TrackerTab } from './components/TrackerSubNav';
+import { JobApplication, SavedJobItem } from './types';
+
 
 export type Screen = 
   | 'OVERVIEW' 
@@ -38,6 +47,10 @@ export type Screen =
   | 'JOB_SOURCES'
   | 'CHECK_JOBS'
   | 'RECENTLY_FOUND'
+  | 'APPLIED_KANBAN'
+  | 'SAVED_JOBS'
+  | 'APPLICATION_DETAILS'
+  | 'SCHEDULE_HUB'
   | 'RESUME_HUB'
   | 'RESUME_UPLOAD'
   | 'RESUME_ANALYSIS'
@@ -54,6 +67,30 @@ export default function App() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  // Tracker Pursuit Suite State
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string>('app_tw_01');
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerPrefillJob, setDrawerPrefillJob] = useState<SavedJobItem | null>(null);
+  const [editingApplication, setEditingApplication] = useState<JobApplication | null>(null);
+  const [cachedSavedJobs, setCachedSavedJobs] = useState<SavedJobItem[]>([]);
+
+  // Fetch saved jobs for prefill cache
+  useEffect(() => {
+    fetch('/api/v1/tracker/saved-jobs?userId=user_arjun')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && data.savedJobs) {
+          setCachedSavedJobs(data.savedJobs);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleTrackerTabNav = (tab: TrackerTab) => {
+    setActiveScreen(tab as Screen);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
 
   // Discovery navigation state
   const [scanCompany, setScanCompany] = useState<string | undefined>(undefined);
@@ -484,6 +521,65 @@ export default function App() {
               </button>
             </div>
 
+            
+            {/* Group: APPLICATION PURSUIT SUITE (Stitch 5 Interfaces) */}
+            <div className="flex flex-col gap-1">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#9c3d0c] font-bold">
+                APPLICATION PURSUIT
+              </span>
+
+              <button 
+                onClick={() => { setActiveScreen('APPLIED_KANBAN'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'APPLIED_KANBAN' || activeScreen === 'APPLICATION_DETAILS'
+                    ? 'bg-[#ffdbce] text-[#7e2c00] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">view_kanban</span>
+                  <span>Kanban Tracker</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#bc5424] text-white font-bold px-1.5 py-0.5 rounded">
+                  5 Active
+                </span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveScreen('SAVED_JOBS'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'SAVED_JOBS'
+                    ? 'bg-[#ffdbce] text-[#7e2c00] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">bookmark</span>
+                  <span>Saved Jobs</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.5 rounded">
+                  2026 Direct
+                </span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveScreen('SCHEDULE_HUB'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'SCHEDULE_HUB'
+                    ? 'bg-[#ffdbce] text-[#7e2c00] font-bold'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">calendar_month</span>
+                  <span>Schedule Hub</span>
+                </div>
+                <span className="text-[10px] font-mono bg-[#ffdad6] text-[#93000a] font-bold px-1.5 py-0.5 rounded">
+                  Interviews
+                </span>
+              </button>
+            </div>
+
             {/* Group: CANDIDATE CALIBRATION */}
             <div className="flex flex-col gap-1">
               <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
@@ -678,6 +774,68 @@ export default function App() {
             </div>
           )}
 
+          
+          {/* Stitch 5 Interfaces: Application Pursuit Suite */}
+          {activeScreen === 'APPLIED_KANBAN' && (
+            <ApplicationTrackerKanbanPage
+              onSelectApplication={(id) => {
+                setSelectedApplicationId(id);
+                setActiveScreen('APPLICATION_DETAILS');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenAddDrawer={() => {
+                setDrawerPrefillJob(null);
+                setEditingApplication(null);
+                setIsDrawerOpen(true);
+              }}
+              onNavigateTab={handleTrackerTabNav}
+            />
+          )}
+
+          {activeScreen === 'SAVED_JOBS' && (
+            <SavedJobsPage
+              onOpenAddDrawerWithJob={(job) => {
+                setDrawerPrefillJob(job);
+                setEditingApplication(null);
+                setIsDrawerOpen(true);
+              }}
+              onOpenAddDrawer={() => {
+                setDrawerPrefillJob(null);
+                setEditingApplication(null);
+                setIsDrawerOpen(true);
+              }}
+              onNavigateTab={handleTrackerTabNav}
+              onNavigateToFindJobs={() => setActiveScreen('FIND_JOBS')}
+            />
+          )}
+
+          {activeScreen === 'APPLICATION_DETAILS' && (
+            <ApplicationDetailsTimelinePage
+              applicationId={selectedApplicationId}
+              onBack={() => {
+                setActiveScreen('APPLIED_KANBAN');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenEditDrawer={(app) => {
+                setEditingApplication(app);
+                setIsDrawerOpen(true);
+              }}
+              onNavigateTab={handleTrackerTabNav}
+              onNavigateToResumeAnalysis={() => setActiveScreen('RESUME_ANALYSIS')}
+            />
+          )}
+
+          {activeScreen === 'SCHEDULE_HUB' && (
+            <UpcomingActivitiesSchedulePage
+              onOpenAddDrawer={() => {
+                setDrawerPrefillJob(null);
+                setEditingApplication(null);
+                setIsDrawerOpen(true);
+              }}
+              onNavigateTab={handleTrackerTabNav}
+            />
+          )}
+
           {/* Existing App Pages */}
           {activeScreen === 'OVERVIEW' && (
             <DashboardPage 
@@ -780,6 +938,22 @@ export default function App() {
         </main>
 
       </div>
+
+      
+      {/* Slide-over Drawer: Add & Edit Application Pursuit */}
+      <ApplicationDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onSaved={(newApp) => {
+          setIsDrawerOpen(false);
+          setSelectedApplicationId(newApp.id);
+          setActiveScreen('APPLICATION_DETAILS');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        savedJobs={cachedSavedJobs}
+        prefillJob={drawerPrefillJob}
+        editingApplication={editingApplication}
+      />
 
       {/* Interactive Modal: Upload Master Resume */}
       {isResumeModalOpen && (

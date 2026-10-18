@@ -377,3 +377,168 @@ export interface ResumeUploadResponse {
   extractedSkills: string[];
   message: string;
 }
+
+
+// ==========================================
+// TRACKER & APPLICATION PURSUIT SUITE TYPES
+// ==========================================
+
+export type ApplicationStage =
+  | 'APPLIED'
+  | 'UNDER_REVIEW'
+  | 'ASSESSMENT_SCHEDULED'
+  | 'TECHNICAL_INTERVIEW'
+  | 'FINAL_ROUND'
+  | 'OFFER_EXTENDED'
+  | 'REJECTED'
+  | 'ARCHIVED';
+
+export interface ApplicationTimelineItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  dateFormatted: string;
+  completed: boolean;
+  active: boolean;
+  icon: string;
+}
+
+export interface JobApplication {
+  id: string;
+  userId: string;
+  jobId: string;
+  company: string;
+  title: string;
+  logoText: string;
+  ctcText: string;
+  ctcLpa: number;
+  location: string;
+  workMode: string;
+  batchAllowed: string;
+  stage: ApplicationStage;
+  statusLabel: string;
+  nextActionTitle?: string;
+  nextActionFormatted?: string;
+  appliedDateFormatted: string;
+  appliedDate?: string;
+  portalUrl?: string;
+  recruiterContact?: string;
+  notes?: string;
+  matchScore: number;
+  resumeVersionId?: string;
+  resumeVersionLabel?: string;
+  timeline: ApplicationTimelineItem[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface KanbanColumn {
+  stage: ApplicationStage;
+  title: string;
+  colorBadge: string;
+  count: number;
+  applications: JobApplication[];
+}
+
+export interface KanbanBoardResponse {
+  totalTrackedCount: number;
+  inProgressCount: number;
+  interviewsScheduledCount: number;
+  offersCount: number;
+  columns: KanbanColumn[];
+}
+
+export interface SavedJobItem {
+  id: string;
+  jobId: string;
+  userId: string;
+  company: string;
+  title: string;
+  logoText: string;
+  ctcText: string;
+  location: string;
+  workMode: string;
+  batchAllowed: string;
+  verificationStatus: string;
+  deadlineFormatted: string;
+  tags: string[];
+  notes?: string;
+  matchScore: number;
+  portalUrl?: string;
+  savedAt?: string;
+}
+
+export interface SavedJobsResponse {
+  totalSavedCount: number;
+  verifiedEligibleCount: number;
+  needsReviewCount: number;
+  closedCount: number;
+  savedJobs: SavedJobItem[];
+}
+
+export interface ActivityChecklistItem {
+  id: string;
+  label: string;
+  completed: boolean;
+}
+
+export interface ActivityItem {
+  id: string;
+  userId: string;
+  applicationId?: string;
+  company: string;
+  title: string;
+  activityType: 'INTERVIEW' | 'ASSESSMENT' | 'FOLLOW_UP' | 'DEADLINE';
+  scheduledDateTime: string;
+  scheduledFormatted: string;
+  timeFormatted: string;
+  roundName: string;
+  status: 'UPCOMING' | 'COMPLETED' | 'OVERDUE' | 'CANCELLED';
+  meetingLink?: string;
+  interviewer?: string;
+  notes?: string;
+  checklist?: ActivityChecklistItem[];
+}
+
+export interface ScheduleHubResponse {
+  totalUpcomingCount: number;
+  interviewsCount: number;
+  assessmentsCount: number;
+  followupsDueCount: number;
+  overdueCount: number;
+  activities: ActivityItem[];
+}
+
+export interface CreateApplicationRequest {
+  jobId?: string;
+  company: string;
+  title: string;
+  logoText?: string;
+  ctcText?: string;
+  ctcLpa?: number;
+  location?: string;
+  workMode?: string;
+  batchAllowed?: string;
+  stage?: ApplicationStage;
+  resumeVersionId?: string;
+  resumeVersionLabel?: string;
+  portalUrl?: string;
+  recruiterContact?: string;
+  notes?: string;
+}
+
+export interface UpdateApplicationRequest {
+  company?: string;
+  title?: string;
+  ctcText?: string;
+  ctcLpa?: number;
+  location?: string;
+  workMode?: string;
+  stage?: ApplicationStage;
+  statusLabel?: string;
+  nextActionTitle?: string;
+  nextActionFormatted?: string;
+  recruiterContact?: string;
+  notes?: string;
+}
