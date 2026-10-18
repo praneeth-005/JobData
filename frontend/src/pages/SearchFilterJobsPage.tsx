@@ -6,26 +6,45 @@ interface SearchFilterJobsPageProps {
   onNavigateToEligibility?: (jobId: string) => void;
 }
 
+// Tab-visit persistent memory cache
+let cachedSearchFilterJobs: FoundJob[] | null = null;
+let cachedCompaniesList: CompanyItem[] | null = null;
+let hasLoadedSearchFilterOnce = false;
+let cachedFilters = {
+  searchQuery: '',
+  companyInput: '',
+  selectedCompanies: [] as string[],
+  minCtc: 2.4,
+  selectedWorkModes: [] as string[],
+  selectedBatches: [] as string[],
+  selectedInterviewModes: [] as string[],
+  selectedCities: [] as string[],
+  selectedSkills: [] as string[],
+  sortBy: 'match_score' as 'match_score' | 'salary_high' | 'newest',
+};
+
 export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibility }: SearchFilterJobsPageProps) {
-  // Main Search & Company Autocomplete State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [companyInput, setCompanyInput] = useState('');
-  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  // Main Search & Company Autocomplete State (persisted across tab switches)
+  const [searchQuery, setSearchQuery] = useState(cachedFilters.searchQuery);
+  const [companyInput, setCompanyInput] = useState(cachedFilters.companyInput);
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>(cachedFilters.selectedCompanies);
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
 
   // Filter States
-  const [minCtc, setMinCtc] = useState<number>(2.4);
-  const [selectedWorkModes, setSelectedWorkModes] = useState<string[]>([]);
-  const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
-  const [selectedInterviewModes, setSelectedInterviewModes] = useState<string[]>([]);
-  const [selectedCities, setSelectedCities] = useState<string[]>([]);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<'match_score' | 'salary_high' | 'newest'>('match_score');
+  const [minCtc, setMinCtc] = useState<number>(cachedFilters.minCtc);
+  const [selectedWorkModes, setSelectedWorkModes] = useState<string[]>(cachedFilters.selectedWorkModes);
+  const [selectedBatches, setSelectedBatches] = useState<string[]>(cachedFilters.selectedBatches);
+  const [selectedInterviewModes, setSelectedInterviewModes] = useState<string[]>(cachedFilters.selectedInterviewModes);
+  const [selectedCities, setSelectedCities] = useState<string[]>(cachedFilters.selectedCities);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(cachedFilters.selectedSkills);
+  const [sortBy, setSortBy] = useState<'match_score' | 'salary_high' | 'newest'>(cachedFilters.sortBy);
 
   // Data & Telemetry State
-  const [jobs, setJobs] = useState<FoundJob[]>([]);
-  const [companiesList, setCompaniesList] = useState<CompanyItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [jobs, setJobs] = useState<FoundJob[]>(() => cachedSearchFilterJobs || []);
+  const [companiesList, setCompaniesList] = useState<CompanyItem[]>(() => cachedCompaniesList || []);
+  // Only show full loading spinner on first-ever load before cached data exists!
+  const [isLoading, setIsLoading] = useState(!hasLoadedSearchFilterOnce || !cachedSearchFilterJobs);
+  const isInitialMount = useRef(true);
   const [isIngestingCompany, setIsIngestingCompany] = useState(false);
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -46,10 +65,15 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
 
   // Fetch verified companies for search autocomplete
   useEffect(() => {
+    if (cachedCompaniesList && cachedCompaniesList.length > 0) {
+      setCompaniesList(cachedCompaniesList);
+      return;
+    }
     fetch('/api/v1/jobs/companies')
       .then(res => res.ok ? res.json() : null)
       .then(json => {
         if (json && json.data) {
+          cachedCompaniesList = json.data;
           setCompaniesList(json.data);
         }
       })
@@ -57,8 +81,10 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
   }, []);
 
   // Load jobs from backend
-  const fetchFilteredJobs = () => {
-    setIsLoading(true);
+  const fetchFilteredJobs = (silent = false) => {
+    if (!silent) {
+      setIsLoading(true);
+    }
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.append('q', searchQuery.trim());
     if (selectedCompanies.length > 0) params.append('company', selectedCompanies.join(','));
@@ -97,6 +123,8 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
             list = list.filter(j => j.skills && selectedSkills.some(skill => j.skills!.includes(skill)));
           }
 
+          cachedSearchFilterJobs = list;
+          hasLoadedSearchFilterOnce = true;
           setJobs(list);
         } else {
           loadFallbackJobs();
@@ -333,11 +361,36 @@ export default function SearchFilterJobsPage({ onSelectJob, onNavigateToEligibil
     if (selectedCities.length > 0) {
       filtered = filtered.filter(j => selectedCities.some(city => (j.city || j.location).toLowerCase().includes(city.toLowerCase())));
     }
+    cachedSearchFilterJobs = filtered;
+    hasLoadedSearchFilterOnce = true;
     setJobs(filtered);
   };
 
   useEffect(() => {
-    fetchFilteredJobs();
+    cachedFilters = {
+      searchQuery,
+      companyInput,
+      selectedCompanies,
+      minCtc,
+      selectedWorkModes,
+      selectedBatches,
+      selectedInterviewModes,
+      selectedCities,
+      selectedSkills,
+      sortBy,
+    };
+
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      // If we already loaded this tab previously, do a silent background sync without showing any loading spinner!
+      if (hasLoadedSearchFilterOnce && cachedSearchFilterJobs && cachedSearchFilterJobs.length > 0) {
+        fetchFilteredJobs(true /* silent */);
+        return;
+      }
+    }
+
+    // First time load or user modified filters
+    fetchFilteredJobs(false /* normal */);
   }, [searchQuery, selectedCompanies, minCtc, selectedWorkModes, selectedBatches, selectedInterviewModes, selectedCities, selectedSkills, sortBy]);
 
   // Handle on-demand ingestion when a user types an unlisted IT company

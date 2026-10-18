@@ -7,19 +7,25 @@ interface RecentlyFoundJobsPageProps {
   onNavigateToSources: () => void;
 }
 
+// Tab-visit persistent memory cache
+let cachedRecentlyFoundJobs: FoundJob[] | null = null;
+let cachedRecentlyFoundSummary: FoundJobSummary | null = null;
+let hasLoadedRecentlyFoundOnce = false;
+
 export default function RecentlyFoundJobsPage({
   onSelectJob,
   onNavigateToFindJobs,
   onNavigateToSources,
 }: RecentlyFoundJobsPageProps) {
-  const [jobs, setJobs] = useState<FoundJob[]>([]);
-  const [summary, setSummary] = useState<FoundJobSummary>({
+  const [jobs, setJobs] = useState<FoundJob[]>(() => cachedRecentlyFoundJobs || []);
+  const [summary, setSummary] = useState<FoundJobSummary>(() => cachedRecentlyFoundSummary || {
     allCount: 48,
     verifiedCount: 42,
     reviewCount: 6,
     filteredCount: 26,
     jobs: [],
   });
+  const isInitialMount = React.useRef(true);
 
   const [activeTab, setActiveTab] = useState<'all' | 'verified' | 'review' | 'filtered'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,6 +44,9 @@ export default function RecentlyFoundJobsPage({
       .then((res) => res.json())
       .then((json) => {
         if (json && json.data) {
+          cachedRecentlyFoundSummary = json.data;
+          cachedRecentlyFoundJobs = json.data.jobs || [];
+          hasLoadedRecentlyFoundOnce = true;
           setSummary(json.data);
           setJobs(json.data.jobs || []);
         }
@@ -145,6 +154,14 @@ export default function RecentlyFoundJobsPage({
   };
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (hasLoadedRecentlyFoundOnce && cachedRecentlyFoundJobs && cachedRecentlyFoundJobs.length > 0) {
+        // Silent background refresh
+        fetchJobs();
+        return;
+      }
+    }
     fetchJobs();
   }, [activeTab, searchQuery, locationFilter]);
 

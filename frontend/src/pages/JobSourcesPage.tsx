@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { JobSource, JobSourceSummary } from '../types';
 
 interface JobSourcesPageProps {
@@ -6,8 +6,14 @@ interface JobSourcesPageProps {
   onNavigateToFeed: () => void;
 }
 
+// Tab-visit persistent memory cache
+let cachedSources: JobSource[] | null = null;
+let cachedSourcesSummary: JobSourceSummary | null = null;
+let hasLoadedSourcesOnce = false;
+
 export default function JobSourcesPage({ onNavigateToCheckJobs, onNavigateToFeed }: JobSourcesPageProps) {
-  const [sources, setSources] = useState<JobSource[]>([]);
+  const [sources, setSources] = useState<JobSource[]>(() => cachedSources || []);
+  const isInitialMount = useRef(true);
   const [summary, setSummary] = useState<JobSourceSummary>({
     totalPortals: 14,
     openOpportunities: 48,
@@ -39,6 +45,9 @@ export default function JobSourcesPage({ onNavigateToCheckJobs, onNavigateToFeed
       .then((res) => res.json())
       .then((json) => {
         if (json && json.data) {
+          cachedSourcesSummary = json.data;
+          cachedSources = json.data.sources || [];
+          hasLoadedSourcesOnce = true;
           setSummary(json.data);
           setSources(json.data.sources || []);
         }
@@ -107,6 +116,14 @@ export default function JobSourcesPage({ onNavigateToCheckJobs, onNavigateToFeed
   };
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (hasLoadedSourcesOnce && cachedSources && cachedSources.length > 0) {
+        // Silent background refresh
+        fetchSources();
+        return;
+      }
+    }
     fetchSources();
   }, [searchQuery, typeFilter, statusFilter]);
 

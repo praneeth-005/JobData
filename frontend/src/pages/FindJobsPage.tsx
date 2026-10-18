@@ -7,14 +7,20 @@ interface FindJobsPageProps {
   onNavigateToEligibility?: (jobId: string) => void;
 }
 
+// Tab-visit persistent memory cache
+let cachedFindJobs: FoundJob[] | null = null;
+let cachedFindCompanies: CompanyItem[] | null = null;
+let hasLoadedFindJobsOnce = false;
+
 export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, onNavigateToEligibility }: FindJobsPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCompany, setSelectedCompany] = useState<string>('All');
   const [workModeFilter, setWorkModeFilter] = useState<string>('All');
   const [minCtcFilter, setMinCtcFilter] = useState<number>(2.4);
-  const [jobs, setJobs] = useState<FoundJob[]>([]);
-  const [companies, setCompanies] = useState<CompanyItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [jobs, setJobs] = useState<FoundJob[]>(() => cachedFindJobs || []);
+  const [companies, setCompanies] = useState<CompanyItem[]>(() => cachedFindCompanies || []);
+  const [isLoading, setIsLoading] = useState(!hasLoadedFindJobsOnce || !cachedFindJobs);
+  const isInitialMount = React.useRef(true);
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -34,10 +40,15 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
 
   // Fetch verified companies for autocomplete
   useEffect(() => {
+    if (cachedFindCompanies && cachedFindCompanies.length > 0) {
+      setCompanies(cachedFindCompanies);
+      return;
+    }
     fetch('/api/v1/jobs/companies')
       .then(res => res.ok ? res.json() : null)
       .then(json => {
         if (json && json.data) {
+          cachedFindCompanies = json.data;
           setCompanies(json.data);
         }
       })
@@ -45,8 +56,10 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
   }, []);
 
   // Fetch jobs based on search & filters
-  const fetchJobs = () => {
-    setIsLoading(true);
+  const fetchJobs = (silent = false) => {
+    if (!silent) {
+      setIsLoading(true);
+    }
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.append('q', searchQuery.trim());
     if (selectedCompany !== 'All') params.append('company', selectedCompany);
@@ -58,6 +71,8 @@ export default function FindJobsPage({ onSelectJob, onNavigateToSearchFilter, on
       .then(json => {
         if (json && json.data && json.data.jobs) {
           let list = (json.data.jobs as FoundJob[]).filter(j => j.batchAllowed && j.batchAllowed.includes('2026'));
+          cachedFindJobs = list;
+          hasLoadedFindJobsOnce = true;
           setJobs(list);
         } else {
           loadFallbackJobs();
