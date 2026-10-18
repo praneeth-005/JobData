@@ -93,4 +93,13 @@ public class SavedJobItem {
 
     public Instant getSavedAt() { return savedAt; }
     public void setSavedAt(Instant savedAt) { this.savedAt = savedAt; }
+
+    public int getMatchScore() { return jobMatchScore; }
+    public void setMatchScore(int matchScore) { this.jobMatchScore = matchScore; }
+
+    public String getPortalUrl() { return applyUrl; }
+    public void setPortalUrl(String portalUrl) { this.applyUrl = portalUrl; }
+
+    public String getDeadlineFormatted() { return deadlineText; }
+    public void setDeadlineFormatted(String deadlineFormatted) { this.deadlineText = deadlineFormatted; }
 }

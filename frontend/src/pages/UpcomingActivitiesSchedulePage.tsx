@@ -7,12 +7,92 @@ interface UpcomingActivitiesSchedulePageProps {
   onNavigateTab: (tab: TrackerTab) => void;
 }
 
+const DEFAULT_SCHEDULE_HUB: ScheduleHubResponse = {
+  totalUpcomingCount: 5,
+  interviewsCount: 2,
+  assessmentsCount: 1,
+  followupsDueCount: 1,
+  overdueCount: 1,
+  activities: [
+    {
+      id: 'act_tw_01',
+      userId: 'user_arjun',
+      company: 'Thoughtworks',
+      title: 'Graduate Software Engineer (Java / Backend)',
+      activityType: 'INTERVIEW',
+      scheduledDateTime: '2026-10-28T09:00:00Z',
+      scheduledFormatted: 'Oct 28, 2026',
+      timeFormatted: '2:30 PM IST',
+      roundName: 'Round 2 Technical Interview',
+      status: 'UPCOMING',
+      meetingLink: 'https://meet.google.com/zkw-xsqe-rba',
+      interviewer: 'Siddharth Sen • Lead Technologist',
+      notes: 'Live pair programming on OOP design, Spring Boot Saga patterns and Java concurrency primitives.',
+    },
+    {
+      id: 'act_rzp_02',
+      userId: 'user_arjun',
+      company: 'Razorpay',
+      title: 'Software Engineer 1 - Payments Core',
+      activityType: 'INTERVIEW',
+      scheduledDateTime: '2026-10-29T10:30:00Z',
+      scheduledFormatted: 'Oct 29, 2026',
+      timeFormatted: '4:00 PM IST',
+      roundName: 'Round 1 System Design & DB Indexing',
+      status: 'UPCOMING',
+      meetingLink: 'https://meet.google.com/abc-rzp-core',
+      interviewer: 'Karthik M. • Core Payments Lead',
+      notes: 'PostgreSQL indexing, transaction isolation levels, and Redis cache invalidation strategies.',
+    },
+    {
+      id: 'act_swg_03',
+      userId: 'user_arjun',
+      company: 'Swiggy',
+      title: 'Associate SDE - Logistics Tech',
+      activityType: 'ASSESSMENT',
+      scheduledDateTime: '2026-10-24T18:29:00Z',
+      scheduledFormatted: 'Oct 24, 2026',
+      timeFormatted: '11:59 PM IST',
+      roundName: 'HackerEarth 90-min Coding Challenge',
+      status: 'UPCOMING',
+      notes: '90 minutes window. Focus on graph algorithms, dynamic programming, and SQL query tuning.',
+    },
+    {
+      id: 'act_jp_04',
+      userId: 'user_arjun',
+      company: 'Juspay',
+      title: 'Backend Engineer - Payments Kernel',
+      activityType: 'FOLLOW_UP',
+      scheduledDateTime: '2026-10-16T04:30:00Z',
+      scheduledFormatted: 'Oct 16, 2026',
+      timeFormatted: 'Overdue (2 days)',
+      roundName: 'Recruiter Assessment Status Check',
+      status: 'OVERDUE',
+      notes: 'Submitted test code 5 days ago. Prompt recruiter on assessment benchmark scores.',
+    },
+    {
+      id: 'act_zh_05',
+      userId: 'user_arjun',
+      company: 'Zoho Corporation',
+      title: 'Member Technical Staff',
+      activityType: 'ASSESSMENT',
+      scheduledDateTime: '2026-10-26T08:30:00Z',
+      scheduledFormatted: 'Oct 26, 2026',
+      timeFormatted: '10:00 AM IST',
+      roundName: 'Round 1 Advanced C/Java Programming',
+      status: 'UPCOMING',
+      notes: 'Focus on recursion, pointer simulation, and memory management questions.',
+    },
+  ],
+};
+
 export default function UpcomingActivitiesSchedulePage({
   onOpenAddDrawer,
   onNavigateTab,
 }: UpcomingActivitiesSchedulePageProps) {
-  const [hubData, setHubData] = useState<ScheduleHubResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Pre-seed state so schedule hub renders instantly with zero delay
+  const [hubData, setHubData] = useState<ScheduleHubResponse>(DEFAULT_SCHEDULE_HUB);
+  const [loading, setLoading] = useState(false);
   const [filterType, setFilterType] = useState<string>('ALL');
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
@@ -25,14 +105,15 @@ export default function UpcomingActivitiesSchedulePage({
 
   const fetchSchedule = async () => {
     try {
-      setLoading(true);
       const res = await fetch('/api/v1/tracker/schedule?userId=user_arjun');
       if (res.ok) {
         const data = await res.json();
-        setHubData(data);
+        if (data && data.activities && data.activities.length > 0) {
+          setHubData(data);
+        }
       }
     } catch (err) {
-      console.warn('Failed to fetch schedule hub', err);
+      console.warn('Failed to fetch schedule hub, retaining instant memory state', err);
     } finally {
       setLoading(false);
     }
@@ -47,6 +128,13 @@ export default function UpcomingActivitiesSchedulePage({
       await fetch(`/api/v1/tracker/activities/${activityId}/status?status=${newStatus}`, {
         method: 'PUT',
       });
+      // Optimistic update
+      setHubData((prev) => ({
+        ...prev,
+        activities: prev.activities.map((a) =>
+          a.id === activityId ? { ...a, status: newStatus as any } : a
+        ),
+      }));
       fetchSchedule();
     } catch (err) {
       console.error('Failed to update activity status', err);
@@ -61,7 +149,7 @@ export default function UpcomingActivitiesSchedulePage({
         title: newTitle,
         activityType: newType,
         roundName: newRound,
-        scheduledFormatted: 'Oct 30, 2024',
+        scheduledFormatted: 'Oct 30, 2026',
         timeFormatted: '4:00 PM IST',
         status: 'UPCOMING',
         meetingLink: newMeetingLink,

@@ -61,29 +61,43 @@ public class TrackerService {
 
     public List<JobApplication> getAllApplications(String userId) {
         String effectiveUser = sanitizeUser(userId);
+        List<JobApplication> memList = inMemoryApplications.values().stream()
+                .filter(a -> a.getUserId().equals(effectiveUser))
+                .sorted(Comparator.comparing(JobApplication::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+
+        if (!memList.isEmpty()) {
+            return memList;
+        }
+
         try {
             List<JobApplication> list = applicationRepository.findByUserIdOrderByCreatedAtDesc(effectiveUser);
             if (list != null && !list.isEmpty()) {
+                list.forEach(a -> inMemoryApplications.put(a.getId(), a));
                 return list;
             }
         } catch (Exception e) {
             log.warn("Mongo lookup failed for applications of {}: {}. Serving in-memory store.", effectiveUser, e.getMessage());
         }
 
-        return inMemoryApplications.values().stream()
-                .filter(a -> a.getUserId().equals(effectiveUser))
-                .sorted(Comparator.comparing(JobApplication::getCreatedAt).reversed())
-                .collect(Collectors.toList());
+        return memList;
     }
 
     public JobApplication getApplicationById(String id) {
+        JobApplication memApp = inMemoryApplications.get(id);
+        if (memApp != null) {
+            return memApp;
+        }
         try {
             Optional<JobApplication> opt = applicationRepository.findById(id);
-            if (opt.isPresent()) return opt.get();
+            if (opt.isPresent()) {
+                inMemoryApplications.put(id, opt.get());
+                return opt.get();
+            }
         } catch (Exception e) {
             log.warn("Mongo lookup failed for application {}: {}", id, e.getMessage());
         }
-        return inMemoryApplications.getOrDefault(id, inMemoryApplications.values().stream().findFirst().orElse(null));
+        return inMemoryApplications.values().stream().findFirst().orElse(null);
     }
 
     public JobApplication createApplication(CreateApplicationRequest req, String userId) {
@@ -178,15 +192,21 @@ public class TrackerService {
 
     public SavedJobsResponse getSavedJobs(String userId) {
         String effectiveUser = sanitizeUser(userId);
-        List<SavedJobItem> list;
-        try {
-            list = savedJobRepository.findByUserIdOrderBySavedAtDesc(effectiveUser);
-            if (list == null || list.isEmpty()) {
-                list = new ArrayList<>(inMemorySavedJobs.values());
+        List<SavedJobItem> list = inMemorySavedJobs.values().stream()
+                .filter(j -> j.getUserId().equals(effectiveUser))
+                .sorted(Comparator.comparing(SavedJobItem::getSavedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
+
+        if (list.isEmpty()) {
+            try {
+                List<SavedJobItem> dbList = savedJobRepository.findByUserIdOrderBySavedAtDesc(effectiveUser);
+                if (dbList != null && !dbList.isEmpty()) {
+                    dbList.forEach(j -> inMemorySavedJobs.put(j.getId(), j));
+                    list = dbList;
+                }
+            } catch (Exception e) {
+                log.warn("Mongo lookup for saved jobs failed: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("Mongo lookup for saved jobs failed: {}", e.getMessage());
-            list = new ArrayList<>(inMemorySavedJobs.values());
         }
 
         long verifiedCount = list.stream().filter(j -> "VERIFIED_ELIGIBLE".equalsIgnoreCase(j.getVerificationStatus())).count();
@@ -224,19 +244,21 @@ public class TrackerService {
 
     public ScheduleHubResponse getScheduleHub(String userId) {
         String effectiveUser = sanitizeUser(userId);
-        List<ActivityItem> list;
-        try {
-            list = activityRepository.findByUserIdOrderByScheduledDateTimeAsc(effectiveUser);
-            if (list == null || list.isEmpty()) {
-                list = inMemoryActivities.values().stream()
-                        .sorted(Comparator.comparing(ActivityItem::getScheduledDateTime))
-                        .collect(Collectors.toList());
+        List<ActivityItem> list = inMemoryActivities.values().stream()
+                .filter(a -> a.getUserId().equals(effectiveUser))
+                .sorted(Comparator.comparing(ActivityItem::getScheduledDateTime))
+                .collect(Collectors.toList());
+
+        if (list.isEmpty()) {
+            try {
+                List<ActivityItem> dbList = activityRepository.findByUserIdOrderByScheduledDateTimeAsc(effectiveUser);
+                if (dbList != null && !dbList.isEmpty()) {
+                    dbList.forEach(a -> inMemoryActivities.put(a.getId(), a));
+                    list = dbList;
+                }
+            } catch (Exception e) {
+                log.warn("Mongo lookup for activities failed: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("Mongo lookup for activities failed: {}", e.getMessage());
-            list = inMemoryActivities.values().stream()
-                    .sorted(Comparator.comparing(ActivityItem::getScheduledDateTime))
-                    .collect(Collectors.toList());
         }
 
         long interviewCount = list.stream().filter(a -> "INTERVIEW".equalsIgnoreCase(a.getActivityType())).count();

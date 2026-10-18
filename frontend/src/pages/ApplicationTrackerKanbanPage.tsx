@@ -13,27 +13,177 @@ interface ApplicationTrackerKanbanPageProps {
   onNavigateTab: (tab: TrackerTab) => void;
 }
 
+const DEFAULT_KANBAN: KanbanBoardResponse = {
+  totalTrackedCount: 5,
+  inProgressCount: 3,
+  interviewsScheduledCount: 2,
+  offersCount: 1,
+  columns: [
+    {
+      stage: 'APPLIED',
+      title: 'Applied / Submitted',
+      colorBadge: 'bg-[#e2e8f0] text-[#475569]',
+      count: 1,
+      applications: [
+        {
+          id: 'app_zh_05',
+          userId: 'user_arjun',
+          jobId: 'job_zh_04',
+          company: 'Zoho Corporation',
+          title: 'Member Technical Staff (MTS)',
+          logoText: 'ZH',
+          ctcText: '₹8.5 - ₹10.5 LPA',
+          ctcLpa: 9.5,
+          location: 'Chennai / Tenkasi (On-Site)',
+          workMode: 'On-Site',
+          batchAllowed: '2026 Batch',
+          stage: 'APPLIED',
+          statusLabel: 'Application Ingested',
+          resumeVersionLabel: 'v2.1',
+          appliedDateFormatted: 'Oct 17, 2026',
+          nextActionTitle: 'Zoho Advanced C/Java Round 1',
+          matchScore: 84,
+          timeline: [],
+        },
+      ],
+    },
+    {
+      stage: 'UNDER_REVIEW',
+      title: 'Under Review & Tests',
+      colorBadge: 'bg-[#eef2ff] text-[#4338ca]',
+      count: 1,
+      applications: [
+        {
+          id: 'app_swg_03',
+          userId: 'user_arjun',
+          jobId: 'job_swg_03',
+          company: 'Swiggy',
+          title: 'Associate Software Development Engineer',
+          logoText: 'SWG',
+          ctcText: '₹14.0 - ₹17.0 LPA',
+          ctcLpa: 15.5,
+          location: 'Bengaluru (Hybrid)',
+          workMode: 'Hybrid',
+          batchAllowed: '2026 Batch',
+          stage: 'UNDER_REVIEW',
+          statusLabel: 'Resume Screened (Top 5%)',
+          resumeVersionLabel: 'v2.1',
+          appliedDateFormatted: 'Oct 15, 2026',
+          nextActionTitle: 'Online Coding Assessment Link Release',
+          matchScore: 88,
+          timeline: [],
+        },
+      ],
+    },
+    {
+      stage: 'TECHNICAL_INTERVIEW',
+      title: 'Interviews Scheduled',
+      colorBadge: 'bg-[#faf5ff] text-[#9333ea]',
+      count: 2,
+      applications: [
+        {
+          id: 'app_tw_01',
+          userId: 'user_arjun',
+          jobId: 'job_tw_01',
+          company: 'Thoughtworks',
+          title: 'Graduate Software Engineer (2026 Batch)',
+          logoText: 'TW',
+          ctcText: '₹11.5 - ₹13.5 LPA',
+          ctcLpa: 12.5,
+          location: 'Bengaluru / Pune (Hybrid)',
+          workMode: 'Hybrid',
+          batchAllowed: '2026 Batch',
+          stage: 'TECHNICAL_INTERVIEW',
+          statusLabel: 'Technical Interview (Round 2)',
+          resumeVersionLabel: 'v2.1',
+          appliedDateFormatted: 'Oct 14, 2026',
+          nextActionTitle: 'System Design & Pair Programming Round',
+          matchScore: 94,
+          timeline: [],
+        },
+        {
+          id: 'app_rzp_02',
+          userId: 'user_arjun',
+          jobId: 'job_rzp_02',
+          company: 'Razorpay',
+          title: 'Software Engineer 1 - Payments Core',
+          logoText: 'RZP',
+          ctcText: '₹16.0 - ₹20.0 LPA',
+          ctcLpa: 18.0,
+          location: 'Bengaluru (On-Site)',
+          workMode: 'On-Site',
+          batchAllowed: '2026 Batch',
+          stage: 'TECHNICAL_INTERVIEW',
+          statusLabel: 'Technical Round 1 (ACID & DB)',
+          resumeVersionLabel: 'v2.1',
+          appliedDateFormatted: 'Oct 12, 2026',
+          nextActionTitle: 'PostgreSQL Indexing & Concurrency Round',
+          matchScore: 91,
+          timeline: [],
+        },
+      ],
+    },
+    {
+      stage: 'OFFER_EXTENDED',
+      title: 'Offers Extended',
+      colorBadge: 'bg-[#ecfdf5] text-[#059669]',
+      count: 1,
+      applications: [
+        {
+          id: 'app_pp_04',
+          userId: 'user_arjun',
+          jobId: 'job_pp_04',
+          company: 'PhonePe',
+          title: 'Software Engineer - Distributed Systems',
+          logoText: 'PP',
+          ctcText: '₹18.0 - ₹22.0 LPA',
+          ctcLpa: 20.0,
+          location: 'Bengaluru (On-Site)',
+          workMode: 'On-Site',
+          batchAllowed: '2026 Batch',
+          stage: 'OFFER_EXTENDED',
+          statusLabel: 'Official Offer Extended',
+          resumeVersionLabel: 'v2.1',
+          appliedDateFormatted: 'Sep 28, 2026',
+          nextActionTitle: 'Review & Execute Offer Acceptance Letter',
+          matchScore: 96,
+          timeline: [],
+        },
+      ],
+    },
+    {
+      stage: 'ARCHIVED',
+      title: 'Archived / Inactive',
+      colorBadge: 'bg-[#f1f5f9] text-[#94a3b8]',
+      count: 0,
+      applications: [],
+    },
+  ],
+};
+
 export default function ApplicationTrackerKanbanPage({
   onSelectApplication,
   onOpenAddDrawer,
   onNavigateTab,
 }: ApplicationTrackerKanbanPageProps) {
-  const [boardData, setBoardData] = useState<KanbanBoardResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Pre-seed state so board is instantly visible with zero delay
+  const [boardData, setBoardData] = useState<KanbanBoardResponse>(DEFAULT_KANBAN);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilterStage, setSelectedFilterStage] = useState<string>('ALL');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
   const fetchBoard = async () => {
     try {
-      setLoading(true);
       const res = await fetch('/api/v1/tracker/kanban?userId=user_arjun');
       if (res.ok) {
         const data = await res.json();
-        setBoardData(data);
+        if (data && data.columns && data.columns.length > 0) {
+          setBoardData(data);
+        }
       }
     } catch (e) {
-      console.warn('Failed to fetch kanban from API, using fallback store', e);
+      console.warn('Failed to fetch kanban from API, retaining instant memory state', e);
     } finally {
       setLoading(false);
     }
@@ -268,7 +418,7 @@ export default function ApplicationTrackerKanbanPage({
         {viewMode === 'kanban' ? (
           /* Kanban Board Columns */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-start overflow-x-auto pb-6">
-            {boardData?.columns?.map((col) => {
+            {boardData.columns.map((col) => {
               const filteredApps = col.applications.filter(filterApp);
               return (
                 <div
@@ -392,8 +542,8 @@ export default function ApplicationTrackerKanbanPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f1f5f9]">
-                  {boardData?.columns
-                    ?.flatMap((c) => c.applications)
+                  {boardData.columns
+                    .flatMap((c) => c.applications)
                     .filter(filterApp)
                     .map((app) => (
                       <tr
