@@ -85,6 +85,17 @@
                     <jvmArguments>-Djdk.tls.client.protocols=TLSv1.2 -Djdk.tls.namedGroups=x25519,secp256r1,secp384r1</jvmArguments>
                 </configuration>
             </plugin>
+                    <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <argLine>-Djdk.tls.client.protocols=TLSv1.2 -Djdk.tls.namedGroups=x25519,secp256r1,secp384r1 -Dspring.profiles.active=test</argLine>
+                    <systemPropertyVariables>
+                        <spring.profiles.active>test</spring.profiles.active>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

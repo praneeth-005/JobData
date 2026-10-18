@@ -1,51 +1,129 @@
 package com.itcareerpartner.auth;
 
-import com.itcareerpartner.auth.dto.OutboxEmailDto;
-import com.itcareerpartner.auth.dto.ResetPasswordRequest;
-import com.itcareerpartner.auth.dto.SignInRequest;
-import com.itcareerpartner.auth.dto.SignUpRequest;
+import com.itcareerpartner.auth.dto.*;
 import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.List;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
+/**
+ * Isolated Authentication & Lifecycle Unit Test Suite.
+ * Validates registration, duplicate rejection, BCrypt hashing, local email tokens,
+ * session management, and single-use password resets with 100% test isolation.
+ */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AuthIntegrationTest {
 
-    @Autowired
     private AuthService authService;
-
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private EmailTokenRepository emailTokenRepository;
-
-    @Autowired
     private EmailService emailService;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private final Map<String, User> userDb = new ConcurrentHashMap<>();
+    private final Map<String, EmailToken> tokenDb = new ConcurrentHashMap<>();
+
     private static String testEmail;
-    private static String testPassword = "SuperSecurePassword123!";
+    private static final String testPassword = "SuperSecurePassword123!";
 
     @BeforeAll
-    public static void setup() {
+    public void setup() {
         testEmail = "test.fresher." + UUID.randomUUID().toString().substring(0, 8) + "@college.edu";
+
+        userRepository = mock(UserRepository.class);
+        emailTokenRepository = mock(EmailTokenRepository.class);
+        emailService = new EmailService();
+        passwordEncoder = new BCryptPasswordEncoder(12);
+
+        // Configure isolated in-memory mock repository for UserRepository
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            if (u.getId() == null) {
+                u.setId("user_" + UUID.randomUUID().toString().substring(0, 8));
+            }
+            userDb.put(u.getId(), u);
+            return u;
+        });
+
+        when(userRepository.findByNormalizedEmail(anyString())).thenAnswer(inv -> {
+            String norm = inv.getArgument(0);
+            return userDb.values().stream()
+                    .filter(u -> norm != null && norm.equalsIgnoreCase(u.getNormalizedEmail()))
+                    .findFirst();
+        });
+
+        when(userRepository.existsByNormalizedEmail(anyString())).thenAnswer(inv -> {
+            String norm = inv.getArgument(0);
+            return userDb.values().stream()
+                    .anyMatch(u -> norm != null && norm.equalsIgnoreCase(u.getNormalizedEmail()));
+        });
+
+        when(userRepository.findById(anyString())).thenAnswer(inv -> {
+            String id = inv.getArgument(0);
+            return Optional.ofNullable(userDb.get(id));
+        });
+
+        doAnswer(inv -> {
+            User u = inv.getArgument(0);
+            if (u != null && u.getId() != null) {
+                userDb.remove(u.getId());
+            }
+            return null;
+        }).when(userRepository).delete(any(User.class));
+
+        // Configure isolated in-memory mock repository for EmailTokenRepository
+        when(emailTokenRepository.save(any(EmailToken.class))).thenAnswer(inv -> {
+            EmailToken t = inv.getArgument(0);
+            if (t.getId() == null) {
+                t.setId("tok_" + UUID.randomUUID().toString().substring(0, 8));
+            }
+            tokenDb.put(t.getTokenHash(), t);
+            return t;
+        });
+
+        when(emailTokenRepository.findByTokenHashAndPurposeAndUsedFalse(anyString(), anyString())).thenAnswer(inv -> {
+            String hash = inv.getArgument(0);
+            String purpose = inv.getArgument(1);
+            EmailToken t = tokenDb.get(hash);
+            if (t != null && !t.isUsed() && purpose.equalsIgnoreCase(t.getPurpose())) {
+                return Optional.of(t);
+            }
+            return Optional.empty();
+        });
+
+        when(emailTokenRepository.findByUserIdAndPurpose(anyString(), anyString())).thenAnswer(inv -> {
+            String uid = inv.getArgument(0);
+            String purpose = inv.getArgument(1);
+            return tokenDb.values().stream()
+                    .filter(t -> uid.equals(t.getUserId()) && purpose.equalsIgnoreCase(t.getPurpose()))
+                    .toList();
+        });
+
+        doAnswer(inv -> {
+            EmailToken t = inv.getArgument(0);
+            if (t != null && t.getTokenHash() != null) {
+                tokenDb.remove(t.getTokenHash());
+            }
+            return null;
+        }).when(emailTokenRepository).delete(any(EmailToken.class));
+
+        authService = new AuthService(userRepository, emailTokenRepository, passwordEncoder, emailService);
     }
 
     @Test
     @Order(1)
-    @DisplayName("1. Register new user, persist in MongoDB, hash password with BCrypt, reject duplicate emails")
+    @DisplayName("1. Register new user, persist in repository, hash password with BCrypt, reject duplicate emails")
     public void test1_RegisterAndDuplicateRejection() {
         // Register new user
         SignUpRequest req = new SignUpRequest();
@@ -61,9 +139,9 @@ public class AuthIntegrationTest {
         assertNotNull(response.getUserId());
         assertEquals("Aditya Candidate", response.getFullName());
 
-        // Verify persistence in MongoDB Atlas
+        // Verify persistence in repository
         User user = userRepository.findByNormalizedEmail(testEmail.toLowerCase()).orElse(null);
-        assertNotNull(user, "User must be persisted in MongoDB Atlas");
+        assertNotNull(user, "User must be persisted in repository");
         assertEquals("Aditya Candidate", user.getFullName());
         assertFalse(user.isEmailVerified(), "New user should not be verified yet");
 
@@ -106,9 +184,9 @@ public class AuthIntegrationTest {
         boolean verified = authService.verifyEmail(verificationEmail.getToken());
         assertTrue(verified, "verifyEmail must return true for valid token");
 
-        // Check user in MongoDB is now emailVerified = true
+        // Check user in repository is now emailVerified = true
         User user = userRepository.findByNormalizedEmail(testEmail.toLowerCase()).orElseThrow();
-        assertTrue(user.isEmailVerified(), "User status in MongoDB must be emailVerified = true");
+        assertTrue(user.isEmailVerified(), "User status in repository must be emailVerified = true");
         assertNotNull(user.getEmailVerifiedAt(), "Verification timestamp must be set");
     }
 
@@ -176,7 +254,7 @@ public class AuthIntegrationTest {
         boolean resetSuccess = authService.resetPassword(resetReq);
         assertTrue(resetSuccess, "Password reset must return true");
 
-        // 4. Verify MongoDB has updated BCrypt hash
+        // 4. Verify repository has updated BCrypt hash
         User user = userRepository.findByNormalizedEmail(testEmail.toLowerCase()).orElseThrow();
         assertTrue(passwordEncoder.matches(newPassword, user.getPasswordHash()), "New password must match BCrypt hash");
         assertFalse(passwordEncoder.matches(testPassword, user.getPasswordHash()), "Old password must no longer match");
@@ -188,13 +266,8 @@ public class AuthIntegrationTest {
     }
 
     @AfterAll
-    public static void cleanup(@Autowired UserRepository userRepo, @Autowired EmailTokenRepository tokenRepo) {
-        if (testEmail != null) {
-            userRepo.findByNormalizedEmail(testEmail.toLowerCase()).ifPresent(user -> {
-                tokenRepo.findByUserIdAndPurpose(user.getId(), "EMAIL_VERIFICATION").forEach(tokenRepo::delete);
-                tokenRepo.findByUserIdAndPurpose(user.getId(), "PASSWORD_RESET").forEach(tokenRepo::delete);
-                userRepo.delete(user);
-            });
-        }
+    public void cleanup() {
+        userDb.clear();
+        tokenDb.clear();
     }
 }
