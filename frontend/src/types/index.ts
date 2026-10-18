@@ -542,3 +542,69 @@ export interface UpdateApplicationRequest {
   recruiterContact?: string;
   notes?: string;
 }
+
+// ==========================================
+// NOTIFICATIONS & ALERTS SYSTEM TYPES
+// ==========================================
+export type NotificationType = 
+  | 'JOB_ALERT' 
+  | 'INTERVIEW_REMINDER' 
+  | 'FOLLOW_UP_OVERDUE' 
+  | 'WALK_IN_DRIVE' 
+  | 'SYSTEM_UPDATE';
+
+export interface NotificationItem {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  company?: string;
+  logoText?: string;
+  ctcText?: string;
+  location?: string;
+  batchAllowed?: string;
+  matchScore?: number;
+  linkUrl?: string;
+  actionLabel?: string;
+  read: boolean;
+  createdAt?: string;
+  timeAgoFormatted: string;
+  tags?: string[];
+  metadata?: Record<string, string>;
+}
+
+export interface NotificationPreferences {
+  id?: string;
+  userId: string;
+  jobAlertsEnabled: boolean;
+  jobAlertsCadence: 'IMMEDIATE' | 'DAILY' | 'WEEKLY';
+  inAppEnabled: boolean;
+  emailAlertsEnabled: boolean;
+  emailAddress: string;
+  emailVerified: boolean;
+  whatsappAlertsEnabled: boolean;
+  whatsappNumber: string;
+  interviewRemindersEnabled: boolean;
+  interviewRemindersTiming: string;
+  assessmentWarningsEnabled: boolean;
+  assessmentExpirationWarning: string;
+  followupPromptsEnabled: boolean;
+  followupOverdueDays: number;
+  minMatchScore: number;
+  quietHoursEnabled: boolean;
+  quietHoursStart: string;
+  quietHoursEnd: string;
+  alertStatus: 'ACTIVE' | 'PAUSED';
+  updatedAt?: string;
+}
+
+export interface NotificationSummaryResponse {
+  totalCount: number;
+  unreadCount: number;
+  jobAlertsCount: number;
+  remindersCount: number;
+  systemUpdatesCount: number;
+  alertStatus: 'ACTIVE' | 'PAUSED';
+  notifications: NotificationItem[];
+}

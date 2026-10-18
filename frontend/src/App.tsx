@@ -30,6 +30,16 @@ import SavedJobsPage from './pages/SavedJobsPage';
 import ApplicationDetailsTimelinePage from './pages/ApplicationDetailsTimelinePage';
 import UpcomingActivitiesSchedulePage from './pages/UpcomingActivitiesSchedulePage';
 import ApplicationDrawer from './components/ApplicationDrawer';
+
+// Stitch 6 Interfaces: Notifications & Alerts Suite
+import NotificationCenterPage from './pages/NotificationCenterPage';
+import JobAlertsPage from './pages/JobAlertsPage';
+import ApplicationRemindersPage from './pages/ApplicationRemindersPage';
+import NotificationPreferencesPage from './pages/NotificationPreferencesPage';
+import NotificationDeliveryStatesPage from './pages/NotificationDeliveryStatesPage';
+import NotificationBellDropdown from './components/NotificationBellDropdown';
+import { NotificationsTab } from './components/NotificationsSubNav';
+import { NotificationItem } from './types';
 import { TrackerTab } from './components/TrackerSubNav';
 import { JobApplication, SavedJobItem } from './types';
 
@@ -58,7 +68,12 @@ export type Screen =
   | 'RESUME_IMPROVEMENTS'
   | 'RESUME_VERSIONS'
   | 'SIGN_IN' 
-  | 'SIGN_UP';
+  | 'SIGN_UP'
+  | 'NOTIFICATION_CENTER'
+  | 'JOB_ALERTS'
+  | 'APPLICATION_REMINDERS'
+  | 'NOTIFICATION_PREFERENCES'
+  | 'NOTIFICATION_STATES';
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('RESUME_HUB');
@@ -89,6 +104,45 @@ export default function App() {
   const handleTrackerTabNav = (tab: TrackerTab) => {
     setActiveScreen(tab as Screen);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Notification Suite State & Pre-seeded Caches (0ms instant load)
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState<number>(3);
+
+  useEffect(() => {
+    fetch('/api/v1/notifications?userId=user_arjun')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.notifications) {
+          setNotifications(data.notifications);
+          setUnreadNotificationsCount(data.unreadCount ?? 3);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleNotificationTabNav = (tab: NotificationsTab) => {
+    setActiveScreen(tab as Screen);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleMarkAllRead = async () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadNotificationsCount(0);
+    try {
+      await fetch('/api/v1/notifications/mark-all-read?userId=user_arjun', { method: 'POST' });
+    } catch (e) {}
+  };
+
+  const handleMarkAsRead = async (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+    setUnreadNotificationsCount((prev) => Math.max(0, prev - 1));
+    try {
+      await fetch(`/api/v1/notifications/${id}/read?userId=user_arjun`, { method: 'POST' });
+    } catch (e) {}
   };
 
 
@@ -592,6 +646,118 @@ export default function App() {
               </button>
             </div>
 
+            {/* Group: ALERTS & NOTIFICATIONS (Stitch 6 Interfaces) */}
+            <div className="flex flex-col gap-1">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
+                ALERTS &amp; INTELLIGENCE
+              </span>
+
+              <button 
+                onClick={() => { setActiveScreen('NOTIFICATION_CENTER'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'NOTIFICATION_CENTER'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">notifications</span>
+                  <span>Notification Center</span>
+                </div>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'NOTIFICATION_CENTER'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#4338ca] text-white'
+                }`}>
+                  {unreadNotificationsCount} New
+                </span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveScreen('JOB_ALERTS'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'JOB_ALERTS'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">radar</span>
+                  <span>Job Alerts</span>
+                </div>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'JOB_ALERTS'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#ecfdf5] text-[#059669]'
+                }`}>
+                  Active
+                </span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveScreen('APPLICATION_REMINDERS'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'APPLICATION_REMINDERS'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">alarm</span>
+                  <span>Reminders Hub</span>
+                </div>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'APPLICATION_REMINDERS'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#fffbeb] text-[#d97706]'
+                }`}>
+                  1 Overdue
+                </span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveScreen('NOTIFICATION_PREFERENCES'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'NOTIFICATION_PREFERENCES'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">settings_alert</span>
+                  <span>Alert Preferences</span>
+                </div>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'NOTIFICATION_PREFERENCES'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#f1f5f9] text-[#64748b]'
+                }`}>
+                  Channels
+                </span>
+              </button>
+
+              <button 
+                onClick={() => { setActiveScreen('NOTIFICATION_STATES'); setIsMobileMenuOpen(false); }}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
+                  activeScreen === 'NOTIFICATION_STATES'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
+                    : 'hover:bg-[#f8fafc] text-[#334155]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px]">sync_saved_locally</span>
+                  <span>Delivery &amp; States</span>
+                </div>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'NOTIFICATION_STATES'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#ecfdf5] text-[#059669]'
+                }`}>
+                  Sync
+                </span>
+              </button>
+            </div>
+
             {/* Group: CANDIDATE CALIBRATION */}
             <div className="flex flex-col gap-1">
               <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
@@ -706,6 +872,11 @@ export default function App() {
                 {activeScreen === 'JOB_SOURCES' && 'Monitored Career Portals'}
                 {activeScreen === 'CHECK_JOBS' && 'Check for New Jobs'}
                 {activeScreen === 'RECENTLY_FOUND' && 'Recently Discovered'}
+                {activeScreen === 'NOTIFICATION_CENTER' && 'Notification & Alert Center'}
+                {activeScreen === 'JOB_ALERTS' && 'Job Alerts & Real-Time Telemetry'}
+                {activeScreen === 'APPLICATION_REMINDERS' && 'Application Reminders & Deadlines'}
+                {activeScreen === 'NOTIFICATION_PREFERENCES' && 'Notification & Channel Preferences'}
+                {activeScreen === 'NOTIFICATION_STATES' && 'Notification Delivery & System States'}
               </span>
             </div>
           </div>
@@ -721,14 +892,53 @@ export default function App() {
               <span>My Resume (v2.1)</span>
             </button>
 
-            {/* Notification Bell */}
-            <button 
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              className="relative p-1.5 text-[#64748b] hover:text-[#0f172a] rounded-lg transition"
-            >
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4338ca] absolute top-1.5 right-1.5"></span>
-            </button>
+            {/* Notification Bell Dropdown (Stitch Interface 2) */}
+            <div className="relative">
+              <button 
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                className="relative p-1.5 text-[#64748b] hover:text-[#0f172a] rounded-lg transition"
+                title="Notifications & Alerts"
+              >
+                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                {unreadNotificationsCount > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-[#4338ca] ring-2 ring-white absolute top-1.5 right-1.5"></span>
+                )}
+              </button>
+
+              <NotificationBellDropdown
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+                notifications={notifications}
+                unreadCount={unreadNotificationsCount}
+                onMarkAllAsRead={handleMarkAllRead}
+                onMarkAsRead={handleMarkAsRead}
+                onNavigateToCenter={() => {
+                  setIsNotificationOpen(false);
+                  setActiveScreen('NOTIFICATION_CENTER');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                onNavigateToPreferences={() => {
+                  setIsNotificationOpen(false);
+                  setActiveScreen('NOTIFICATION_PREFERENCES');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                onSelectJob={(jobId) => {
+                  setIsNotificationOpen(false);
+                  setSelectedJobId(jobId);
+                  setActiveScreen('JOB_DETAILS');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                onNavigateToSchedule={() => {
+                  setIsNotificationOpen(false);
+                  setActiveScreen('SCHEDULE_HUB');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                onCopyEmailTemplate={() => {
+                  const tpl = `Subject: Polite Follow-up: Software Engineer Application - Arjun Rao (2026 Batch)\n\nDear Juspay Recruiting Team,\n\nI hope you are having a productive week.\n\nI am writing to politely follow up regarding the status of my application for the Software Engineer position submitted 8 business days ago. As a 2026 graduate specializing in backend systems (Java / Spring Boot), I remain very enthusiastic about contributing to Juspay's payments architecture.\n\nThank you for your time and guidance.\n\nWarm regards,\nArjun Rao\narjun.sharma2026@gmail.com | +91 98765 43210`;
+                  navigator.clipboard?.writeText(tpl);
+                }}
+              />
+            </div>
 
             {/* Avatar Pill */}
             <div 
@@ -787,6 +997,76 @@ export default function App() {
           )}
 
           
+          {/* Stitch 6 Interfaces: Notifications & Alerts Suite */}
+          {activeScreen === 'NOTIFICATION_CENTER' && (
+            <NotificationCenterPage
+              onNavigateTab={handleNotificationTabNav}
+              onSelectJob={(id) => {
+                setSelectedJobId(id);
+                setActiveScreen('JOB_DETAILS');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onNavigateToSchedule={() => {
+                setActiveScreen('SCHEDULE_HUB');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onNavigateToApplications={() => {
+                setActiveScreen('APPLIED_KANBAN');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onNavigateToResumeAnalysis={() => {
+                setActiveScreen('RESUME_ANALYSIS');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onNavigateToPreferences={() => {
+                setActiveScreen('NOTIFICATION_PREFERENCES');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
+          {activeScreen === 'JOB_ALERTS' && (
+            <JobAlertsPage
+              onNavigateTab={handleNotificationTabNav}
+              onSelectJob={(id) => {
+                setSelectedJobId(id);
+                setActiveScreen('JOB_DETAILS');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
+          {activeScreen === 'APPLICATION_REMINDERS' && (
+            <ApplicationRemindersPage
+              onNavigateTab={handleNotificationTabNav}
+              onNavigateToSchedule={() => {
+                setActiveScreen('SCHEDULE_HUB');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onNavigateToApplications={(id) => {
+                if (id) setSelectedApplicationId(id);
+                setActiveScreen('APPLIED_KANBAN');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
+          {activeScreen === 'NOTIFICATION_PREFERENCES' && (
+            <NotificationPreferencesPage
+              onNavigateTab={handleNotificationTabNav}
+            />
+          )}
+
+          {activeScreen === 'NOTIFICATION_STATES' && (
+            <NotificationDeliveryStatesPage
+              onNavigateTab={handleNotificationTabNav}
+              onNavigateToFindJobs={() => {
+                setActiveScreen('FIND_JOBS');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
           {/* Stitch 5 Interfaces: Application Pursuit Suite */}
           {activeScreen === 'APPLIED_KANBAN' && (
             <ApplicationTrackerKanbanPage
@@ -1014,31 +1294,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Drawer: Notifications */}
-      {isNotificationOpen && (
-        <div className="fixed top-14 right-4 sm:right-6 w-80 bg-white border border-[#e2e8f0] rounded-2xl shadow-xl z-50 p-4 flex flex-col gap-3 animate-scale-up">
-          <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-2">
-            <span className="text-xs font-bold font-mono text-[#0f172a] uppercase">Real-Time Telemetry</span>
-            <span className="text-[10px] font-mono text-[#059669] font-bold">4 Feeds Active</span>
-          </div>
-          <div className="flex flex-col gap-2 text-xs">
-            <div className="p-2 rounded-lg bg-[#f0fdf4] border border-[#bbf7d0]">
-              <div className="font-bold text-[#15803d]">Thoughtworks Match Ready</div>
-              <div className="text-[11px] text-[#166534]">Arjun Rao v2.1 reached 94% alignment with Graduate SWE.</div>
-            </div>
-            <div className="p-2 rounded-lg bg-[#f8fafc] border border-[#e2e8f0]">
-              <div className="font-bold text-[#334155]">Swiggy Tech Careers Ingested</div>
-              <div className="text-[11px] text-[#64748b]">Associate Software Engineer 2026 batch verified with zero bond.</div>
-            </div>
-          </div>
-          <button 
-            onClick={() => setIsNotificationOpen(false)}
-            className="w-full py-1.5 rounded-lg bg-[#f1f5f9] text-[#475569] text-xs font-mono hover:bg-[#e2e8f0]"
-          >
-            Close Feed
-          </button>
-        </div>
-      )}
+      {/* Drawer: Notifications replaced by NotificationBellDropdown */}
 
     </div>
   );
