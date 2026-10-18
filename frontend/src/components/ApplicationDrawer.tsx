@@ -143,7 +143,6 @@ export default function ApplicationDrawer({
         if (res.ok) {
           resultApp = await res.json();
         } else {
-          // Fallback optimistic object
           resultApp = {
             id: `app_${Date.now().toString().slice(-6)}`,
             userId: 'user_arjun',
@@ -184,7 +183,6 @@ export default function ApplicationDrawer({
       onClose();
     } catch (err) {
       console.error('Error saving application:', err);
-      // Fallback optimistic
       onSaved({
         id: editingApplication ? editingApplication.id : `app_${Date.now().toString().slice(-6)}`,
         userId: 'user_arjun',
@@ -239,32 +237,32 @@ export default function ApplicationDrawer({
     <div className="fixed inset-0 z-50 overflow-hidden flex justify-end animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#1f1b17]/40 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
       {/* Slide-over Panel */}
-      <div className="relative w-full max-w-[640px] bg-[#fff8f5] shadow-2xl flex flex-col h-full z-10 border-l border-[#ddc0b6]/50">
+      <div className="relative w-full max-w-[640px] bg-white shadow-2xl flex flex-col h-full z-10 border-l border-[#e2e8f0]">
         {/* Header */}
-        <div className="px-6 sm:px-8 pt-7 pb-5 bg-white border-b border-[#f0e6e0] flex items-start justify-between shrink-0">
+        <div className="px-6 sm:px-8 pt-7 pb-5 bg-white border-b border-[#f1f5f9] flex items-start justify-between shrink-0">
           <div className="flex flex-col gap-1 pr-4">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#ffdbce] text-[#7e2c00] text-[11px] font-bold tracking-wider uppercase">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#eef2ff] text-[#4338ca] text-[11px] font-bold tracking-wider uppercase">
                 Application Record
               </span>
-              <span className="text-xs text-[#8a7269] font-medium">• Strict 2026 Batch Sync</span>
+              <span className="text-xs text-[#64748b] font-medium">• Strict 2026 Batch Sync</span>
             </div>
-            <h2 className="text-2xl font-bold text-[#1f1b17] tracking-tight">
+            <h2 className="text-2xl font-bold text-[#0f172a] tracking-tight">
               {editingApplication ? 'Edit Application Details' : 'Add New Application'}
             </h2>
-            <p className="text-xs text-[#625d5b]">
+            <p className="text-xs text-[#475569]">
               Track an opportunity from external submission to offer letter with verified audit trail.
             </p>
           </div>
           <button
             onClick={onClose}
             aria-label="Close drawer"
-            className="w-9 h-9 -mr-2 -mt-1 rounded-full flex items-center justify-center text-[#8a7269] hover:text-[#1f1b17] hover:bg-[#f6ece6] transition-all"
+            className="w-9 h-9 -mr-2 -mt-1 rounded-full flex items-center justify-center text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc] transition-all"
           >
             <span className="material-symbols-outlined text-[22px]">close</span>
           </button>
@@ -275,22 +273,22 @@ export default function ApplicationDrawer({
           {/* Source Mode Selector */}
           {!editingApplication && (
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-semibold text-[#8a7269] uppercase tracking-wider">
+              <span className="text-xs font-semibold text-[#64748b] uppercase tracking-wider">
                 Source Mode
               </span>
-              <div className="grid grid-cols-2 p-1 rounded-xl bg-[#f6ece6] border border-[#eae1da]">
+              <div className="grid grid-cols-2 p-1 rounded-xl bg-[#f8fafc] border border-[#e2e8f0]">
                 <button
                   type="button"
                   onClick={() => setSourceMode('prefill')}
                   className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                     sourceMode === 'prefill'
-                      ? 'bg-white shadow-xs text-[#9c3d0c]'
-                      : 'text-[#625d5b] hover:text-[#1f1b17]'
+                      ? 'bg-white shadow-xs text-[#4338ca]'
+                      : 'text-[#64748b] hover:text-[#0f172a]'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[17px]">bookmark_added</span>
                   <span>Pre-fill from Saved Jobs</span>
-                  <span className="ml-1 text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-[#00692e]/10 text-[#00692e] font-bold">
+                  <span className="ml-1 text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-[#059669]/10 text-[#059669] font-bold">
                     Recommended
                   </span>
                 </button>
@@ -299,8 +297,8 @@ export default function ApplicationDrawer({
                   onClick={() => setSourceMode('manual')}
                   className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                     sourceMode === 'manual'
-                      ? 'bg-white shadow-xs text-[#9c3d0c]'
-                      : 'text-[#625d5b] hover:text-[#1f1b17]'
+                      ? 'bg-white shadow-xs text-[#4338ca]'
+                      : 'text-[#64748b] hover:text-[#0f172a]'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[17px]">edit_note</span>
@@ -312,25 +310,25 @@ export default function ApplicationDrawer({
 
           {/* Pre-fill Selector Card */}
           {sourceMode === 'prefill' && !editingApplication && savedJobs.length > 0 && (
-            <div className="rounded-xl bg-white p-4 border border-[#ddc0b6] shadow-xs flex flex-col gap-3">
+            <div className="rounded-xl bg-[#f8fafc] p-4 border border-[#e2e8f0] shadow-xs flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[#00692e] text-[17px]">verified</span>
-                  <span className="text-xs font-bold text-[#00692e] uppercase tracking-wider">
+                  <span className="material-symbols-outlined text-[#059669] text-[17px]">verified</span>
+                  <span className="text-xs font-bold text-[#059669] uppercase tracking-wider">
                     Linked to Verified Listing
                   </span>
                 </div>
-                <span className="text-[11px] text-[#8a7269]">
+                <span className="text-[11px] text-[#64748b]">
                   {savedJobs.length} opportunities saved
                 </span>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#625d5b]">Choose Saved Job Listing:</label>
+                <label className="text-xs font-medium text-[#475569]">Choose Saved Job Listing:</label>
                 <select
                   value={selectedSavedJobId}
                   onChange={(e) => handleSavedJobChange(e.target.value)}
-                  className="w-full h-10 px-3 bg-[#fff8f5] border border-[#ddc0b6] rounded-lg text-xs font-semibold text-[#1f1b17] outline-none focus:ring-2 focus:ring-[#bc5424]/20"
+                  className="w-full h-10 px-3 bg-white border border-[#e2e8f0] rounded-lg text-xs font-semibold text-[#0f172a] outline-none focus:ring-2 focus:ring-[#4338ca]/20"
                 >
                   {savedJobs.map((j) => (
                     <option key={j.id} value={j.id}>
@@ -345,8 +343,8 @@ export default function ApplicationDrawer({
           {/* Core Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-[#1f1b17]">
-                Company Name <span className="text-[#9c3d0c]">*</span>
+              <label className="text-xs font-bold text-[#0f172a]">
+                Company Name <span className="text-[#4338ca]">*</span>
               </label>
               <input
                 type="text"
@@ -354,12 +352,12 @@ export default function ApplicationDrawer({
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="e.g. Google India, Thoughtworks"
-                className="h-11 px-3.5 rounded-lg bg-white border border-[#ddc0b6] text-xs font-medium text-[#1f1b17] outline-none focus:ring-2 focus:ring-[#bc5424]/30"
+                className="h-11 px-3.5 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs font-medium text-[#0f172a] outline-none focus:bg-white focus:ring-2 focus:ring-[#4338ca]/20 focus:border-[#4338ca]"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-[#1f1b17]">
-                Job Title / Role <span className="text-[#9c3d0c]">*</span>
+              <label className="text-xs font-bold text-[#0f172a]">
+                Job Title / Role <span className="text-[#4338ca]">*</span>
               </label>
               <input
                 type="text"
@@ -367,7 +365,7 @@ export default function ApplicationDrawer({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Graduate Software Engineer"
-                className="h-11 px-3.5 rounded-lg bg-white border border-[#ddc0b6] text-xs font-medium text-[#1f1b17] outline-none focus:ring-2 focus:ring-[#bc5424]/30"
+                className="h-11 px-3.5 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs font-medium text-[#0f172a] outline-none focus:bg-white focus:ring-2 focus:ring-[#4338ca]/20 focus:border-[#4338ca]"
               />
             </div>
           </div>
@@ -375,13 +373,13 @@ export default function ApplicationDrawer({
           {/* URL */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#1f1b17]">Application / Portal URL</label>
+              <label className="text-xs font-bold text-[#0f172a]">Application / Portal URL</label>
               {portalUrl && (
                 <a
                   href={portalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-[#9c3d0c] hover:underline flex items-center gap-1 font-semibold"
+                  className="text-xs text-[#4338ca] hover:underline flex items-center gap-1 font-semibold"
                 >
                   <span>Test Link</span>
                   <span className="material-symbols-outlined text-[14px]">open_in_new</span>
@@ -389,7 +387,7 @@ export default function ApplicationDrawer({
               )}
             </div>
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-3 text-[#8a7269] text-[17px]">
+              <span className="material-symbols-outlined absolute left-3 top-3 text-[#64748b] text-[17px]">
                 link
               </span>
               <input
@@ -397,7 +395,7 @@ export default function ApplicationDrawer({
                 value={portalUrl}
                 onChange={(e) => setPortalUrl(e.target.value)}
                 placeholder="https://careers.company.com/jobs/..."
-                className="w-full h-11 pl-9 pr-3.5 rounded-lg bg-white border border-[#ddc0b6] text-xs font-medium text-[#1f1b17] outline-none focus:ring-2 focus:ring-[#bc5424]/30"
+                className="w-full h-11 pl-9 pr-3.5 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs font-medium text-[#0f172a] outline-none focus:bg-white focus:ring-2 focus:ring-[#4338ca]/20 focus:border-[#4338ca]"
               />
             </div>
           </div>
@@ -405,17 +403,17 @@ export default function ApplicationDrawer({
           {/* Stage Selector Chips */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#1f1b17]">Current Application Stage</label>
-              <span className="text-[11px] font-semibold text-[#9c3d0c]">
+              <label className="text-xs font-bold text-[#0f172a]">Current Application Stage</label>
+              <span className="text-[11px] font-semibold text-[#4338ca]">
                 {getStageLabel(stage)}
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
-                { id: 'APPLIED' as ApplicationStage, label: 'Applied', icon: 'send', color: 'border-[#475569]' },
-                { id: 'UNDER_REVIEW' as ApplicationStage, label: 'In Review', icon: 'rule', color: 'border-[#4338ca]' },
-                { id: 'TECHNICAL_INTERVIEW' as ApplicationStage, label: 'Interview', icon: 'videocam', color: 'border-[#9333ea]' },
-                { id: 'OFFER_EXTENDED' as ApplicationStage, label: 'Offer', icon: 'stars', color: 'border-[#059669]' },
+                { id: 'APPLIED' as ApplicationStage, label: 'Applied', icon: 'send' },
+                { id: 'UNDER_REVIEW' as ApplicationStage, label: 'In Review', icon: 'rule' },
+                { id: 'TECHNICAL_INTERVIEW' as ApplicationStage, label: 'Interview', icon: 'videocam' },
+                { id: 'OFFER_EXTENDED' as ApplicationStage, label: 'Offer', icon: 'stars' },
               ].map((st) => {
                 const isSelected = stage === st.id;
                 return (
@@ -425,8 +423,8 @@ export default function ApplicationDrawer({
                     onClick={() => setStage(st.id)}
                     className={`py-2.5 px-3 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
                       isSelected
-                        ? 'bg-[#fff] border-[#bc5424] text-[#9c3d0c] shadow-xs ring-2 ring-[#bc5424]/20'
-                        : 'bg-white border-[#ddc0b6] text-[#625d5b] hover:bg-[#f6ece6]'
+                        ? 'bg-white border-[#4338ca] text-[#4338ca] shadow-xs ring-2 ring-[#4338ca]/20'
+                        : 'bg-[#f8fafc] border-[#e2e8f0] text-[#64748b] hover:bg-white'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[18px]">{st.icon}</span>
@@ -440,21 +438,21 @@ export default function ApplicationDrawer({
           {/* Compensation, Work Mode, & Batch Row */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-[#1f1b17]">CTC Package</label>
+              <label className="text-xs font-bold text-[#0f172a]">CTC Package</label>
               <input
                 type="text"
                 value={ctcText}
                 onChange={(e) => setCtcText(e.target.value)}
                 placeholder="₹12.0 - ₹15.0 LPA"
-                className="h-10 px-3 rounded-lg bg-white border border-[#ddc0b6] text-xs text-[#1f1b17] outline-none"
+                className="h-10 px-3 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs text-[#0f172a] outline-none"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-[#1f1b17]">Work Arrangement</label>
+              <label className="text-xs font-bold text-[#0f172a]">Work Arrangement</label>
               <select
                 value={workMode}
                 onChange={(e) => setWorkMode(e.target.value)}
-                className="h-10 px-3 rounded-lg bg-white border border-[#ddc0b6] text-xs text-[#1f1b17] outline-none"
+                className="h-10 px-3 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs text-[#0f172a] outline-none"
               >
                 <option value="Hybrid">Hybrid</option>
                 <option value="On-site">On-site</option>
@@ -462,7 +460,7 @@ export default function ApplicationDrawer({
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-[#1f1b17]">Batch Eligibility</label>
+              <label className="text-xs font-bold text-[#0f172a]">Batch Eligibility</label>
               <div className="h-10 px-3 rounded-lg bg-[#ecfdf5] border border-[#a7f3d0] flex items-center justify-between text-xs font-bold text-[#065f46]">
                 <span>2026 Batch</span>
                 <span className="material-symbols-outlined text-[16px]">verified</span>
@@ -472,13 +470,13 @@ export default function ApplicationDrawer({
 
           {/* Linked Resume Version */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-[#1f1b17]">
+            <label className="text-xs font-bold text-[#0f172a]">
               Submitted Resume Version
             </label>
             <select
               value={resumeVersion}
               onChange={(e) => setResumeVersion(e.target.value)}
-              className="h-10 px-3 rounded-lg bg-white border border-[#ddc0b6] text-xs font-medium text-[#1f1b17] outline-none focus:ring-2 focus:ring-[#bc5424]/20"
+              className="h-10 px-3 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs font-medium text-[#0f172a] outline-none focus:ring-2 focus:ring-[#4338ca]/20"
             >
               <option value="v2.1 (Full-Stack Backend Master)">
                 Master Resume v2.1 — Full-Stack & Systems (ATS Score 94)
@@ -494,7 +492,7 @@ export default function ApplicationDrawer({
 
           {/* Recruiter / Contact */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-[#1f1b17]">
+            <label className="text-xs font-bold text-[#0f172a]">
               Recruiter / Point of Contact
             </label>
             <input
@@ -502,36 +500,36 @@ export default function ApplicationDrawer({
               value={recruiterContact}
               onChange={(e) => setRecruiterContact(e.target.value)}
               placeholder="e.g. shreya.recruitment@thoughtworks.com"
-              className="h-10 px-3 rounded-lg bg-white border border-[#ddc0b6] text-xs text-[#1f1b17] outline-none"
+              className="h-10 px-3 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs text-[#0f172a] outline-none"
             />
           </div>
 
           {/* Notes */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-[#1f1b17]">Pursuit Notes & Prep Strategy</label>
+            <label className="text-xs font-bold text-[#0f172a]">Pursuit Notes & Prep Strategy</label>
             <textarea
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add interview round takeaways, referrals, or follow-up timelines..."
-              className="p-3 rounded-lg bg-white border border-[#ddc0b6] text-xs text-[#1f1b17] outline-none resize-none"
+              className="p-3 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs text-[#0f172a] outline-none resize-none"
             />
           </div>
         </form>
 
         {/* Sticky Drawer Footer */}
-        <div className="px-6 sm:px-8 py-4 bg-white border-t border-[#f0e6e0] flex items-center justify-between shrink-0">
+        <div className="px-6 sm:px-8 py-4 bg-white border-t border-[#f1f5f9] flex items-center justify-between shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-lg text-xs font-semibold text-[#625d5b] hover:bg-[#f6ece6] transition-all"
+            className="px-4 py-2.5 rounded-lg text-xs font-semibold text-[#64748b] hover:bg-[#f8fafc] transition-all"
           >
             Discard
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || !company || !title}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#bc5424] hover:bg-[#9c3d0c] disabled:opacity-50 text-white text-xs font-bold shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#4338ca] hover:bg-[#3730a3] disabled:opacity-50 text-white text-xs font-bold shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0"
           >
             {isSubmitting ? (
               <>

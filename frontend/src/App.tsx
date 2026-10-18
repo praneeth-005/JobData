@@ -524,7 +524,7 @@ export default function App() {
             
             {/* Group: APPLICATION PURSUIT SUITE (Stitch 5 Interfaces) */}
             <div className="flex flex-col gap-1">
-              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#9c3d0c] font-bold">
+              <span className="px-2.5 text-[10px] font-mono uppercase tracking-wider text-[#94a3b8] font-bold">
                 APPLICATION PURSUIT
               </span>
 
@@ -532,7 +532,7 @@ export default function App() {
                 onClick={() => { setActiveScreen('APPLIED_KANBAN'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
                   activeScreen === 'APPLIED_KANBAN' || activeScreen === 'APPLICATION_DETAILS'
-                    ? 'bg-[#ffdbce] text-[#7e2c00] font-bold'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
                     : 'hover:bg-[#f8fafc] text-[#334155]'
                 }`}
               >
@@ -540,7 +540,11 @@ export default function App() {
                   <span className="material-symbols-outlined text-[17px]">view_kanban</span>
                   <span>Kanban Tracker</span>
                 </div>
-                <span className="text-[10px] font-mono bg-[#bc5424] text-white font-bold px-1.5 py-0.5 rounded">
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'APPLIED_KANBAN' || activeScreen === 'APPLICATION_DETAILS'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#eef2ff] text-[#4338ca]'
+                }`}>
                   5 Active
                 </span>
               </button>
@@ -549,7 +553,7 @@ export default function App() {
                 onClick={() => { setActiveScreen('SAVED_JOBS'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
                   activeScreen === 'SAVED_JOBS'
-                    ? 'bg-[#ffdbce] text-[#7e2c00] font-bold'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
                     : 'hover:bg-[#f8fafc] text-[#334155]'
                 }`}
               >
@@ -557,7 +561,11 @@ export default function App() {
                   <span className="material-symbols-outlined text-[17px]">bookmark</span>
                   <span>Saved Jobs</span>
                 </div>
-                <span className="text-[10px] font-mono bg-[#ecfdf5] text-[#059669] font-bold px-1.5 py-0.5 rounded">
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'SAVED_JOBS'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#ecfdf5] text-[#059669]'
+                }`}>
                   2026 Direct
                 </span>
               </button>
@@ -566,7 +574,7 @@ export default function App() {
                 onClick={() => { setActiveScreen('SCHEDULE_HUB'); setIsMobileMenuOpen(false); }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition ${
                   activeScreen === 'SCHEDULE_HUB'
-                    ? 'bg-[#ffdbce] text-[#7e2c00] font-bold'
+                    ? 'bg-[#4338ca] text-white font-bold shadow-xs'
                     : 'hover:bg-[#f8fafc] text-[#334155]'
                 }`}
               >
@@ -574,7 +582,11 @@ export default function App() {
                   <span className="material-symbols-outlined text-[17px]">calendar_month</span>
                   <span>Schedule Hub</span>
                 </div>
-                <span className="text-[10px] font-mono bg-[#ffdad6] text-[#93000a] font-bold px-1.5 py-0.5 rounded">
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  activeScreen === 'SCHEDULE_HUB'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#fef3c7] text-[#92400e]'
+                }`}>
                   Interviews
                 </span>
               </button>

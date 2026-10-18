@@ -92,13 +92,13 @@ export default function ApplicationDetailsTimelinePage({
 
   if (!app && !loading) {
     return (
-      <div className="min-h-screen bg-[#fff8f5] flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-[#faf8ff] flex items-center justify-center p-6 text-center">
         <div>
-          <h2 className="text-xl font-bold text-[#1f1b17]">Application Not Found</h2>
-          <p className="text-xs text-[#8a7269] mt-1">ID: {applicationId}</p>
+          <h2 className="text-xl font-bold text-[#0f172a]">Application Not Found</h2>
+          <p className="text-xs text-[#64748b] mt-1">ID: {applicationId}</p>
           <button
             onClick={onBack}
-            className="mt-4 px-4 py-2 rounded-lg bg-[#bc5424] text-white text-xs font-bold"
+            className="mt-4 px-4 py-2 rounded-lg bg-[#4338ca] text-white text-xs font-bold"
           >
             Back to Kanban Board
           </button>
@@ -191,7 +191,7 @@ export default function ApplicationDetailsTimelinePage({
   };
 
   return (
-    <div className="min-h-screen bg-[#fff8f5] text-[#1f1b17] font-sans antialiased pb-20">
+    <div className="min-h-screen bg-[#faf8ff] text-[#0f172a] font-sans antialiased pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {/* Navigation SubBar */}
         <TrackerSubNav
@@ -201,51 +201,51 @@ export default function ApplicationDetailsTimelinePage({
         />
 
         {/* Back Link & Breadcrumb */}
-        <div className="flex items-center gap-2 mb-4 text-xs font-semibold text-[#8a7269]">
+        <div className="flex items-center gap-2 mb-4 text-xs font-semibold text-[#64748b]">
           <button
             onClick={onBack}
-            className="flex items-center gap-1 hover:text-[#9c3d0c] transition-colors"
+            className="flex items-center gap-1 hover:text-[#4338ca] transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">arrow_back</span>
             <span>Back to Kanban Board</span>
           </button>
           <span>/</span>
-          <span className="text-[#1f1b17]">{currentApp.company}</span>
+          <span className="text-[#0f172a]">{currentApp.company}</span>
           <span>/</span>
-          <span className="text-[#9c3d0c]">Application Timeline</span>
+          <span className="text-[#4338ca]">Application Timeline</span>
         </div>
 
         {/* Company Header Card */}
-        <div className="bg-white rounded-xl p-6 sm:p-8 border border-[#f0e6e0] shadow-xs mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="bg-white rounded-xl p-6 sm:p-8 border border-[#e2e8f0] shadow-xs mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-start gap-5">
-            <div className="w-16 h-16 rounded-xl bg-[#f6ece6] flex items-center justify-center text-[#9c3d0c] font-black text-2xl shadow-xs border border-[#ddc0b6]/40 shrink-0">
+            <div className="w-16 h-16 rounded-xl bg-[#eef2ff] flex items-center justify-center text-[#4338ca] font-black text-2xl shadow-xs border border-[#c7d2fe]/50 shrink-0">
               {currentApp.logoText || currentApp.company.substring(0, 2).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center flex-wrap gap-2 mb-1.5">
-                <span className="text-sm font-bold text-[#1f1b17]">{currentApp.company}</span>
-                <span className="w-1 h-1 rounded-full bg-[#8a7269]/40"></span>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#ecfdf5] text-[#00692e] text-[11px] font-bold flex items-center gap-1">
+                <span className="text-sm font-bold text-[#0f172a]">{currentApp.company}</span>
+                <span className="w-1 h-1 rounded-full bg-[#cbd5e1]"></span>
+                <span className="px-2.5 py-0.5 rounded-full bg-[#ecfdf5] text-[#059669] text-[11px] font-bold flex items-center gap-1">
                   <span className="material-symbols-outlined text-[13px]">verified</span>
                   <span>{currentApp.batchAllowed} Verified</span>
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#ffdbce] text-[#7e2c00] text-[11px] font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#eef2ff] text-[#4338ca] text-[11px] font-bold">
                   {currentApp.statusLabel || currentApp.stage}
                 </span>
               </div>
-              <h1 className="text-2xl font-extrabold text-[#1f1b17] tracking-tight">
+              <h1 className="text-2xl font-extrabold text-[#0f172a] tracking-tight">
                 {currentApp.title}
               </h1>
-              <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-xs text-[#625d5b] mt-2">
+              <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-xs text-[#475569] mt-2">
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">location_on</span>
                   <span>{currentApp.location} ({currentApp.workMode})</span>
                 </span>
-                <span className="flex items-center gap-1 font-bold text-[#1f1b17]">
-                  <span className="material-symbols-outlined text-[16px] text-[#00692e]">payments</span>
+                <span className="flex items-center gap-1 font-bold text-[#0f172a]">
+                  <span className="material-symbols-outlined text-[16px] text-[#059669]">payments</span>
                   <span>{currentApp.ctcText}</span>
                 </span>
-                <span className="flex items-center gap-1 text-[#8a7269]">
+                <span className="flex items-center gap-1 text-[#64748b]">
                   <span className="material-symbols-outlined text-[16px]">calendar_today</span>
                   <span>Applied {currentApp.appliedDateFormatted}</span>
                 </span>
@@ -257,7 +257,7 @@ export default function ApplicationDetailsTimelinePage({
           <div className="flex items-center flex-wrap gap-2.5">
             <button
               onClick={() => onOpenEditDrawer(currentApp as any)}
-              className="px-4 py-2.5 rounded-lg bg-[#f6ece6] hover:bg-[#eae1da] text-xs font-bold text-[#1f1b17] transition-all flex items-center gap-1.5"
+              className="px-4 py-2.5 rounded-lg bg-[#f8fafc] hover:bg-[#f1f5f9] text-xs font-bold text-[#0f172a] border border-[#e2e8f0] transition-all flex items-center gap-1.5 shadow-xs"
             >
               <span className="material-symbols-outlined text-[17px]">edit</span>
               <span>Edit Details</span>
@@ -265,7 +265,7 @@ export default function ApplicationDetailsTimelinePage({
             <select
               value={currentApp.stage}
               onChange={(e) => handleStageChange(e.target.value as ApplicationStage)}
-              className="h-10 px-3 rounded-lg bg-[#fff8f5] border border-[#ddc0b6] text-xs font-bold text-[#9c3d0c] outline-none"
+              className="h-10 px-3 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs font-bold text-[#4338ca] outline-none"
             >
               <option value="APPLIED">Stage: Applied</option>
               <option value="UNDER_REVIEW">Stage: Under Review</option>
@@ -280,7 +280,7 @@ export default function ApplicationDetailsTimelinePage({
                 href={currentApp.portalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2.5 rounded-lg bg-[#bc5424] hover:bg-[#9c3d0c] text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5"
+                className="px-4 py-2.5 rounded-lg bg-[#4338ca] hover:bg-[#3730a3] text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5"
               >
                 <span>Portal</span>
                 <span className="material-symbols-outlined text-[15px]">open_in_new</span>
@@ -294,28 +294,28 @@ export default function ApplicationDetailsTimelinePage({
           {/* LEFT COLUMN: Timeline & Candidate Preparation (8 cols) */}
           <div className="lg:col-span-8 flex flex-col gap-8">
             {/* Timeline Section */}
-            <div className="bg-white rounded-xl p-6 sm:p-8 border border-[#f0e6e0] shadow-xs flex flex-col gap-6">
+            <div className="bg-white rounded-xl p-6 sm:p-8 border border-[#e2e8f0] shadow-xs flex flex-col gap-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#8a7269]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
                     Verified Audit Trail
                   </span>
-                  <h2 className="text-xl font-extrabold text-[#1f1b17] tracking-tight">
+                  <h2 className="text-xl font-extrabold text-[#0f172a] tracking-tight">
                     Application Progress Timeline
                   </h2>
-                  <p className="text-xs text-[#625d5b] mt-0.5">
+                  <p className="text-xs text-[#475569] mt-0.5">
                     Chronological milestone progress for this active pursuit.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-1 rounded-full bg-[#f6ece6] text-xs font-mono font-bold text-[#9c3d0c]">
+                  <span className="px-2.5 py-1 rounded-full bg-[#eef2ff] text-xs font-mono font-bold text-[#4338ca]">
                     Round 2 Active
                   </span>
                 </div>
               </div>
 
               {/* Vertical Timeline Steps */}
-              <div className="relative pl-6 sm:pl-8 flex flex-col gap-6 before:absolute before:left-3 sm:before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-[#f0e6e0]">
+              <div className="relative pl-6 sm:pl-8 flex flex-col gap-6 before:absolute before:left-3 sm:before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-[#f1f5f9]">
                 {currentApp.timeline.map((step) => {
                   const isCompleted = step.completed;
                   const isActive = step.active;
@@ -326,10 +326,10 @@ export default function ApplicationDetailsTimelinePage({
                       <div
                         className={`absolute -left-6 sm:-left-8 top-1 w-6 sm:w-8 h-6 sm:h-8 rounded-full flex items-center justify-center ring-4 ring-white shadow-xs z-10 ${
                           isCompleted
-                            ? 'bg-[#00692e] text-white'
+                            ? 'bg-[#059669] text-white'
                             : isActive
-                            ? 'bg-[#bc5424] text-white animate-pulse'
-                            : 'bg-[#f6ece6] text-[#8a7269]'
+                            ? 'bg-[#4338ca] text-white animate-pulse'
+                            : 'bg-[#f1f5f9] text-[#64748b]'
                         }`}
                       >
                         <span className="material-symbols-outlined text-[15px]">
@@ -341,40 +341,40 @@ export default function ApplicationDetailsTimelinePage({
                       <div
                         className={`rounded-xl p-4 sm:p-5 border transition-all ${
                           isActive
-                            ? 'bg-[#fff8f5] border-[#bc5424]/40 shadow-xs'
-                            : 'bg-white border-[#f0e6e0]'
+                            ? 'bg-[#faf8ff] border-[#4338ca]/40 shadow-xs'
+                            : 'bg-white border-[#e2e8f0]'
                         }`}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
                           <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-bold text-[#1f1b17]">{step.title}</h3>
+                            <h3 className="text-sm font-bold text-[#0f172a]">{step.title}</h3>
                             {isActive && (
-                              <span className="px-2 py-0.5 rounded-full bg-[#ffdbce] text-[#7e2c00] text-[10px] font-bold uppercase tracking-wider">
+                              <span className="px-2 py-0.5 rounded-full bg-[#eef2ff] text-[#4338ca] text-[10px] font-bold uppercase tracking-wider">
                                 Current
                               </span>
                             )}
                           </div>
-                          <span className="font-mono text-xs text-[#8a7269]">
+                          <span className="font-mono text-xs text-[#64748b]">
                             {step.dateFormatted}
                           </span>
                         </div>
-                        <div className="text-xs font-semibold text-[#8a7269] mb-1">
+                        <div className="text-xs font-semibold text-[#64748b] mb-1">
                           {step.subtitle}
                         </div>
-                        <p className="text-xs text-[#625d5b] leading-relaxed">{step.description}</p>
+                        <p className="text-xs text-[#475569] leading-relaxed">{step.description}</p>
 
                         {/* Meeting session callout if interview */}
                         {isActive && step.title.toLowerCase().includes('interview') && (
-                          <div className="mt-4 p-3 bg-white rounded-lg border border-[#ddc0b6] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="mt-4 p-3 bg-white rounded-lg border border-[#c7d2fe] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-[#f6ece6] flex items-center justify-center text-[#bc5424]">
+                              <div className="w-8 h-8 rounded-lg bg-[#eef2ff] flex items-center justify-center text-[#4338ca]">
                                 <span className="material-symbols-outlined text-[18px]">videocam</span>
                               </div>
                               <div>
-                                <div className="text-xs font-bold text-[#1f1b17]">
+                                <div className="text-xs font-bold text-[#0f172a]">
                                   Google Meet Session Active
                                 </div>
-                                <div className="text-[11px] font-mono text-[#8a7269]">
+                                <div className="text-[11px] font-mono text-[#64748b]">
                                   meet.google.com/zkw-xsqe-rba
                                 </div>
                               </div>
@@ -383,7 +383,7 @@ export default function ApplicationDetailsTimelinePage({
                               href="https://meet.google.com"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-md bg-[#bc5424] hover:bg-[#9c3d0c] text-white text-xs font-bold flex items-center gap-1 self-start sm:self-auto"
+                              className="px-3 py-1.5 rounded-md bg-[#4338ca] hover:bg-[#3730a3] text-white text-xs font-bold flex items-center gap-1 self-start sm:self-auto shadow-xs"
                             >
                               <span>Join Session</span>
                               <span className="material-symbols-outlined text-[14px]">arrow_outward</span>
@@ -398,17 +398,17 @@ export default function ApplicationDetailsTimelinePage({
             </div>
 
             {/* Preparation Checklist Card */}
-            <div className="bg-white rounded-xl p-6 sm:p-8 border border-[#f0e6e0] shadow-xs flex flex-col gap-4">
+            <div className="bg-white rounded-xl p-6 sm:p-8 border border-[#e2e8f0] shadow-xs flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-[#1f1b17]">
+                  <h3 className="text-base font-bold text-[#0f172a]">
                     Candidate Preparation Checklist
                   </h3>
-                  <p className="text-xs text-[#625d5b]">
+                  <p className="text-xs text-[#475569]">
                     Targeted round review tasks to maximize interview outcome.
                   </p>
                 </div>
-                <span className="text-xs font-mono font-bold text-[#00692e]">
+                <span className="text-xs font-mono font-bold text-[#059669]">
                   {checklist.filter((c) => c.completed).length} / {checklist.length} Completed
                 </span>
               </div>
@@ -418,17 +418,17 @@ export default function ApplicationDetailsTimelinePage({
                   <div
                     key={item.id}
                     onClick={() => toggleChecklist(item.id)}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-[#f0e6e0] hover:bg-[#fff8f5] transition-colors cursor-pointer"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-[#e2e8f0] hover:bg-[#f8fafc] transition-colors cursor-pointer"
                   >
                     <input
                       type="checkbox"
                       checked={item.completed}
                       onChange={() => {}}
-                      className="w-4 h-4 text-[#bc5424] rounded border-[#ddc0b6] focus:ring-[#bc5424]"
+                      className="w-4 h-4 text-[#4338ca] rounded border-[#cbd5e1] focus:ring-[#4338ca]"
                     />
                     <span
                       className={`text-xs ${
-                        item.completed ? 'line-through text-[#8a7269]' : 'text-[#1f1b17] font-medium'
+                        item.completed ? 'line-through text-[#64748b]' : 'text-[#0f172a] font-medium'
                       }`}
                     >
                       {item.label}
@@ -442,55 +442,55 @@ export default function ApplicationDetailsTimelinePage({
           {/* RIGHT COLUMN: Metadata & Notes (4 cols) */}
           <div className="lg:col-span-4 flex flex-col gap-6">
             {/* Opportunity Dossier Card */}
-            <div className="bg-white rounded-xl p-6 border border-[#f0e6e0] shadow-xs flex flex-col gap-4">
-              <h3 className="text-xs font-bold text-[#1f1b17] uppercase tracking-wider">
+            <div className="bg-white rounded-xl p-6 border border-[#e2e8f0] shadow-xs flex flex-col gap-4">
+              <h3 className="text-xs font-bold text-[#0f172a] uppercase tracking-wider">
                 Opportunity Metadata
               </h3>
               <div className="space-y-3 text-xs">
-                <div className="flex justify-between py-1 border-b border-[#f0e6e0]">
-                  <span className="text-[#8a7269]">Application ID</span>
-                  <span className="font-mono font-bold text-[#1f1b17]">{currentApp.id}</span>
+                <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+                  <span className="text-[#64748b]">Application ID</span>
+                  <span className="font-mono font-bold text-[#0f172a]">{currentApp.id}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-[#f0e6e0]">
-                  <span className="text-[#8a7269]">Match Score</span>
-                  <span className="font-mono font-bold text-[#00692e]">
+                <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+                  <span className="text-[#64748b]">Match Score</span>
+                  <span className="font-mono font-bold text-[#059669]">
                     {currentApp.matchScore}% ATS Verified
                   </span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-[#f0e6e0]">
-                  <span className="text-[#8a7269]">Eligible Batch</span>
-                  <span className="font-bold text-[#1f1b17]">{currentApp.batchAllowed}</span>
+                <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+                  <span className="text-[#64748b]">Eligible Batch</span>
+                  <span className="font-bold text-[#0f172a]">{currentApp.batchAllowed}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-[#f0e6e0]">
-                  <span className="text-[#8a7269]">Compensation</span>
-                  <span className="font-bold text-[#1f1b17]">{currentApp.ctcText}</span>
+                <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+                  <span className="text-[#64748b]">Compensation</span>
+                  <span className="font-bold text-[#0f172a]">{currentApp.ctcText}</span>
                 </div>
                 <div className="flex justify-between py-1">
-                  <span className="text-[#8a7269]">Work Arrangement</span>
-                  <span className="font-medium text-[#1f1b17]">{currentApp.workMode}</span>
+                  <span className="text-[#64748b]">Work Arrangement</span>
+                  <span className="font-medium text-[#0f172a]">{currentApp.workMode}</span>
                 </div>
               </div>
             </div>
 
             {/* Resume Submitted Card */}
-            <div className="bg-white rounded-xl p-6 border border-[#f0e6e0] shadow-xs flex flex-col gap-3">
+            <div className="bg-white rounded-xl p-6 border border-[#e2e8f0] shadow-xs flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1f1b17] uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#0f172a] uppercase tracking-wider">
                   Submitted Resume
                 </span>
-                <span className="px-2 py-0.5 rounded bg-[#ecfdf5] text-[#00692e] text-[10px] font-mono font-bold">
+                <span className="px-2 py-0.5 rounded bg-[#ecfdf5] text-[#059669] text-[10px] font-mono font-bold">
                   ATS Score 94
                 </span>
               </div>
-              <div className="p-3 bg-[#fff8f5] rounded-lg border border-[#ddc0b6]/50 flex items-center gap-3">
-                <span className="material-symbols-outlined text-[#bc5424] text-[24px]">
+              <div className="p-3 bg-[#f8fafc] rounded-lg border border-[#e2e8f0] flex items-center gap-3">
+                <span className="material-symbols-outlined text-[#4338ca] text-[24px]">
                   description
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-[#1f1b17] truncate">
+                  <div className="text-xs font-bold text-[#0f172a] truncate">
                     Master Resume {currentApp.resumeVersionLabel || 'v2.1'}
                   </div>
-                  <div className="text-[10px] text-[#8a7269]">
+                  <div className="text-[10px] text-[#64748b]">
                     Full-Stack & Systems • PDF Storage
                   </div>
                 </div>
@@ -498,7 +498,7 @@ export default function ApplicationDetailsTimelinePage({
               {onNavigateToResumeAnalysis && (
                 <button
                   onClick={onNavigateToResumeAnalysis}
-                  className="w-full py-2 rounded-lg bg-[#f6ece6] hover:bg-[#eae1da] text-xs font-bold text-[#9c3d0c] transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full py-2 rounded-lg bg-[#eef2ff] hover:bg-[#c7d2fe]/50 text-xs font-bold text-[#4338ca] transition-colors flex items-center justify-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[15px]">analytics</span>
                   <span>Inspect Resume Analysis</span>
@@ -507,19 +507,19 @@ export default function ApplicationDetailsTimelinePage({
             </div>
 
             {/* Recruiter Contact Card */}
-            <div className="bg-white rounded-xl p-6 border border-[#f0e6e0] shadow-xs flex flex-col gap-3">
-              <span className="text-xs font-bold text-[#1f1b17] uppercase tracking-wider">
+            <div className="bg-white rounded-xl p-6 border border-[#e2e8f0] shadow-xs flex flex-col gap-3">
+              <span className="text-xs font-bold text-[#0f172a] uppercase tracking-wider">
                 Recruiter Contact
               </span>
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-[#f6ece6] flex items-center justify-center text-[#9c3d0c] font-bold text-xs">
+                <div className="w-8 h-8 rounded-full bg-[#eef2ff] flex items-center justify-center text-[#4338ca] font-bold text-xs">
                   HR
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-[#1f1b17] truncate">
+                  <div className="text-xs font-bold text-[#0f172a] truncate">
                     {currentApp.recruiterContact || 'careers@thoughtworks.com'}
                   </div>
-                  <div className="text-[10px] text-[#8a7269]">University Recruiting Lead</div>
+                  <div className="text-[10px] text-[#64748b]">University Recruiting Lead</div>
                 </div>
               </div>
               {currentApp.recruiterContact && (
@@ -527,7 +527,7 @@ export default function ApplicationDetailsTimelinePage({
                   href={`mailto:${currentApp.recruiterContact}?subject=Interview Inquiry: ${encodeURIComponent(
                     currentApp.title
                   )}`}
-                  className="w-full py-2 rounded-lg border border-[#ddc0b6] text-xs font-semibold text-[#1f1b17] hover:bg-[#fff8f5] transition-all flex items-center justify-center gap-1.5"
+                  className="w-full py-2 rounded-lg border border-[#e2e8f0] text-xs font-semibold text-[#0f172a] hover:bg-[#f8fafc] transition-all flex items-center justify-center gap-1.5 shadow-xs"
                 >
                   <span className="material-symbols-outlined text-[15px]">email</span>
                   <span>Email Recruiter</span>
@@ -536,8 +536,8 @@ export default function ApplicationDetailsTimelinePage({
             </div>
 
             {/* Private Notes Card */}
-            <div className="bg-white rounded-xl p-6 border border-[#f0e6e0] shadow-xs flex flex-col gap-3">
-              <span className="text-xs font-bold text-[#1f1b17] uppercase tracking-wider">
+            <div className="bg-white rounded-xl p-6 border border-[#e2e8f0] shadow-xs flex flex-col gap-3">
+              <span className="text-xs font-bold text-[#0f172a] uppercase tracking-wider">
                 Pursuit Notes
               </span>
               <textarea
@@ -545,12 +545,12 @@ export default function ApplicationDetailsTimelinePage({
                 value={notesText}
                 onChange={(e) => setNotesText(e.target.value)}
                 placeholder="Private candidate observations, technical round tips, salary expectations..."
-                className="p-3 bg-[#fff8f5] border border-[#ddc0b6]/50 rounded-lg text-xs text-[#1f1b17] outline-none resize-none"
+                className="p-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg text-xs text-[#0f172a] outline-none focus:bg-white focus:ring-2 focus:ring-[#4338ca]/20 resize-none"
               />
               <button
                 onClick={handleSaveNotes}
                 disabled={savingNotes}
-                className="w-full py-2 rounded-lg bg-[#bc5424] hover:bg-[#9c3d0c] text-white text-xs font-bold transition-all flex items-center justify-center gap-1"
+                className="w-full py-2 rounded-lg bg-[#4338ca] hover:bg-[#3730a3] text-white text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-xs"
               >
                 {savingNotes ? <span>Saving...</span> : <span>Save Notes</span>}
               </button>

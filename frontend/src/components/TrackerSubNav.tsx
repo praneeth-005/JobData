@@ -25,21 +25,21 @@ export default function TrackerSubNav({
       label: 'Kanban Board',
       icon: 'view_kanban',
       badge: `${trackedCount} Active`,
-      badgeColor: 'bg-[#ffdbce] text-[#7e2c00]',
+      badgeColor: 'bg-[#eef2ff] text-[#4338ca]',
     },
     {
       id: 'SAVED_JOBS' as TrackerTab,
       label: 'Saved Jobs',
       icon: 'bookmark',
       badge: `${savedCount} Saved`,
-      badgeColor: 'bg-[#eef2ff] text-[#4338ca]',
+      badgeColor: 'bg-[#ecfdf5] text-[#059669]',
     },
     {
       id: 'SCHEDULE_HUB' as TrackerTab,
       label: 'Schedule Hub',
       icon: 'calendar_month',
       badge: `${upcomingCount} Upcoming`,
-      badgeColor: 'bg-[#ecfdf5] text-[#059669]',
+      badgeColor: 'bg-[#faf5ff] text-[#9333ea]',
     },
   ];
 
@@ -56,7 +56,7 @@ export default function TrackerSubNav({
                 onClick={() => onSelectTab(tab.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 ${
                   isActive
-                    ? 'bg-[#9c3d0c] text-white shadow-xs'
+                    ? 'bg-[#4338ca] text-white shadow-xs'
                     : 'text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
                 }`}
               >
@@ -83,7 +83,7 @@ export default function TrackerSubNav({
 
           <button
             onClick={onOpenAddDrawer}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#bc5424] hover:bg-[#9c3d0c] text-white text-xs font-semibold shadow-xs transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#4338ca] hover:bg-[#3730a3] text-white text-xs font-semibold shadow-xs transition-all transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <span className="material-symbols-outlined text-[16px]">add</span>
             <span>Add Application</span>
